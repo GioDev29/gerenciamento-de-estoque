@@ -6,14 +6,12 @@ from sqlalchemy.orm import relationship
 class Vendedor(Base, Pessoa):
     __tablename__= 'vendedores'
     
-    id = Column(Integer, primary_key=True)
-    nome = Column(String)
-    cpf = Column(String)
-    email = Column(String)
-    senha = Column(String)
-    tipo = Column(String)
     gerente_id = Column(Integer, ForeignKey('gerentes.id'))
     gerente = relationship('Gerente', backref='vendedores')
+    
+    def __repr__(self):
+        return f'<Vendedor(nome={self.nome}, )>'
+        
     
     
 '''
