@@ -6,11 +6,11 @@ from sqlalchemy.orm import relationship
 class Vendedor(Base, Pessoa):
     __tablename__= 'estoquistas'
     
-    setor = Column(String(50), nullable=False)
+    setor = Column(String(100), nullable=False)
     
     
     def __repr__(self):
-        return f'<Vendedor(nome={self.nome}, livros={self.livros})>'
+        return f'<Gerente(nome={self.nome})>'
 
 
 
