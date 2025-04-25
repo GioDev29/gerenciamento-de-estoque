@@ -1,1 +1,0 @@
-No models é colocado as classes para que a gente mapeie usando a ORM

@@ -3,7 +3,7 @@ from database.conexao import Base
 from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 
-class Vendedor(Base, Pessoa):
+class Estoquista(Base, Pessoa):
     __tablename__= 'estoquistas'
     
     gerente_id = Column(Integer, ForeignKey('gerentes.id'))

@@ -1,10 +1,10 @@
 from app.main import bd
-from models import Vendedor
+from models.estoquista import Estoquista
 
 class VendedorService:
     
     @classmethod
-    def criar_vendedor(cls, session: bd):
+    def criar_estoquista(cls, session: bd):
         try:
             nome = input("Insira o nome: ")
             cpf = int(input("Insira o cpf (SOMENTE NÚMEROS): "))
@@ -13,8 +13,8 @@ class VendedorService:
             turno = input("Insira o o Turno(M, T, N): ")
             salario = float(input("Insira o Salário: "))
             
-            vendedor = Vendedor(nome=nome,cpf=str(cpf),email=email,telefone=telefone,turno=turno,salario=salario)
-            session.add(vendedor)
+            estoquista = Estoquista(nome=nome,cpf=str(cpf),email=email,telefone=telefone,turno=turno,salario=salario)
+            session.add(estoquista)
             session.commit()
         except :
             #Erro de duplicidade de cpf
@@ -24,19 +24,19 @@ class VendedorService:
             session.rollback()
             pass
     
-    def listar_vendedores(cls):
-        vendedores = bd.query(Vendedor).all
-        for vendedor in vendedores:
-            print(vendedor)
+    def listar_estoquistas(cls):
+        estoquistas = bd.query(Estoquista).all
+        for estoquista in estoquistas:
+            print(estoquista)
             
-    def listar_ve(cls, cpf):
+    def listar_estoquista(cls, cpf):
         cpf = int(input())
-        vendedor = bd.query(Vendedor).filter_by(cpf=cpf).first()
-        if not vendedor:
+        estoquista = bd.query(Estoquista).filter_by(cpf=cpf).first()
+        if not estoquista:
             print(f'O vendedor do "{cpf}" não foi  encontrado.')
             return
         else:
-            print(vendedor)
+            print(estoquista)
         
     
     

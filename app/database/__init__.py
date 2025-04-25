@@ -1,2 +1,0 @@
-# O __init__.py serve para importar de forma mais fácil os arquivos
-

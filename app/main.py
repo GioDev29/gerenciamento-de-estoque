@@ -1,7 +1,8 @@
-from database import SessionLocal
+from database.conexao import SessionLocal, Base, engine
 from services.vendedor_service import VendedorService
 
 def main():
+    Base.metadata.create_all(engine)
     bd = SessionLocal()
     
     while True:
@@ -15,7 +16,6 @@ def main():
         if opcao == '1':
             ## Da para colocar tipo: Coloque seu email, se esse email existir ai ele tem acesso
             ## A gente pode colocar uma senha especifica para que a gente consiga criar um gestor
-            
             
             print('\nEscolha uma opção:')
             print('1. Cadastrar Vendedor')
@@ -42,7 +42,7 @@ def main():
             print('Registrar entradas e saídas de estoque')
             print('5. Listar produtos com estoque baixo')
             print('6. Sair')
-        elif opcao == '5':
+        elif opcao == '4':
             break
         else:
             print('Opção inválida. Tente novamente.')
