@@ -1,5 +1,40 @@
-from database.conexao import SessionLocal, Base, engine
-from services.vendedor_service import VendedorService
+from database.conexao import SessionLocal, Base, engine, senha_acesso
+from services import vendedor_service, movimentar_estoque_services, gerente_services, estoquista_service
+
+def menu_gerente(bd):
+    senha = int(input("Insira a senha de acesso: "))
+    if senha == senha_acesso:
+        print('\nEscolha uma opção:')
+        print('1. Cadastrar Vendedor')
+        print('2. Cadastrar Estoquista')
+        print('3. Listar Vendedores')
+        print('4. Listar Estoquistas\n')
+        print('_________________________')
+        print('5. Visualizar Estoque Total')
+        print('6. Visualizar Produto Especifico')
+        print('7. Atualizar estoque (Diminuir quantidade)')
+        print('8. Listar produtos com estoque baixo')
+        print('9. Sair')
+        opcao = input("Digite sua opção: ")
+        if opcao == '1':
+            vendedor_service.VendedorService.criar_vendedor(bd)
+        
+
+def menu_estoquista():
+    print('1. Atualizar Informações Pessoais')
+    print('2. Visualizar Estoque Total')
+    print('3. Visualizar Produto Especifico')
+    print('Registrar entradas e saídas de estoque')
+    print('5. Listar produtos com estoque baixo')
+    print('6. Sair')
+    
+def menu_vendedor():
+    print('1. Atualizar Informações Pessoais')
+    print('2. Visualizar Estoque Total')
+    print('3. Visualizar Produto Especifico')
+    print('Registrar entradas e saídas de estoque')
+    print('5. Listar produtos com estoque baixo')
+    print('6. Sair')
 
 def main():
     Base.metadata.create_all(engine)
@@ -16,39 +51,19 @@ def main():
         if opcao == '1':
             ## Da para colocar tipo: Coloque seu email, se esse email existir ai ele tem acesso
             ## A gente pode colocar uma senha especifica para que a gente consiga criar um gestor
+            menu_gerente(bd)
             
-            print('\nEscolha uma opção:')
-            print('1. Cadastrar Vendedor')
-            print('1. Cadastrar Estoquista')
-            print('1. Listar Vendedores')
-            print('1. Listar Estoquistas\n')
-            print('_________________________')
-            print('2. Visualizar Estoque Total')
-            print('3. Visualizar Produto Especifico')
-            print('4. Atualizar estoque (Diminuir quantidade)')
-            print('5. Listar produtos com estoque baixo')
-            print('6. Sair')
+            
         elif opcao == '2':
-            print('1. Atualizar Informações Pessoais')
-            print('2. Visualizar Estoque Total')
-            print('3. Visualizar Produto Especifico')
-            print('Registrar entradas e saídas de estoque')
-            print('5. Listar produtos com estoque baixo')
-            print('6. Sair')
+            menu_estoquista()
+            
         elif opcao == '3':
-            print('1. Atualizar Informações Pessoais')
-            print('2. Visualizar Estoque Total')
-            print('3. Visualizar Produto Especifico')
-            print('Registrar entradas e saídas de estoque')
-            print('5. Listar produtos com estoque baixo')
-            print('6. Sair')
+            menu_vendedor()
+            
         elif opcao == '4':
             break
         else:
             print('Opção inválida. Tente novamente.')
-    
-    
-
 
 if __name__ == '__main__':
     main()

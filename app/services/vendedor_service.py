@@ -1,10 +1,9 @@
-from app.main import bd
 from models import Vendedor
 
 class VendedorService:
     
-    @classmethod
-    def criar_vendedor(cls, session: bd):
+    @staticmethod
+    def criar_vendedor(session):
         try:
             nome = input("Insira o nome: ")
             cpf = int(input("Insira o cpf (SOMENTE NÚMEROS): "))
@@ -24,12 +23,12 @@ class VendedorService:
             session.rollback()
             pass
     
-    def listar_vendedores(cls):
+    def listar_vendedores(bd):
         vendedores = bd.query(Vendedor).all
         for vendedor in vendedores:
             print(vendedor)
             
-    def listar_ve(cls, cpf):
+    def listar_ve(bd):
         cpf = int(input())
         vendedor = bd.query(Vendedor).filter_by(cpf=cpf).first()
         if not vendedor:

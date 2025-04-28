@@ -1,7 +1,6 @@
-from app.main import bd
 from models.estoquista import Estoquista
 
-class VendedorService:
+class EstoquistaService:
     
     @classmethod
     def criar_estoquista(cls, session: bd):
@@ -29,7 +28,7 @@ class VendedorService:
         for estoquista in estoquistas:
             print(estoquista)
             
-    def listar_estoquista(cls, cpf):
+    def listar_estoquista(cls):
         cpf = int(input())
         estoquista = bd.query(Estoquista).filter_by(cpf=cpf).first()
         if not estoquista:
@@ -37,6 +36,7 @@ class VendedorService:
             return
         else:
             print(estoquista)
+            
         
     
     

@@ -3,8 +3,8 @@ from database.conexao import Base
 from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 
-class Vendedor(Base, Pessoa):
-    __tablename__= 'estoquistas'
+class Gerente(Base, Pessoa):
+    __tablename__= 'gerentes'
     
     setor = Column(String(100), nullable=False)
     
