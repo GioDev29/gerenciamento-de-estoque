@@ -2,8 +2,8 @@ from models import Vendedor
 
 class VendedorService:
     
-    @staticmethod
-    def criar_vendedor(session):
+    
+    def criar_vendedor(bd):
         try:
             nome = input("Insira o nome: ")
             cpf = int(input("Insira o cpf (SOMENTE NÚMEROS): "))
@@ -13,35 +13,32 @@ class VendedorService:
             salario = float(input("Insira o Salário: "))
             
             vendedor = Vendedor(nome=nome,cpf=str(cpf),email=email,telefone=telefone,turno=turno,salario=salario)
-            session.add(vendedor)
-            session.commit()
+            bd.add(vendedor)
+            bd.commit()
         except :
             #Erro de duplicidade de cpf
             #Erro de duplicidade de telefone
             #Erro de salario negativo ou menor que 0
             #Erro se não for um turno válido
-            session.rollback()
+            bd.rollback()
             pass
-    @classmethod
-    def deletar_vendedor(cls, session: bd, vendedor_cpf: int):
+    
+    def deletar_vendedor(bd):
+        cpf = int(input())
         try:
-            vendedor = bd.query(Vendedor).filter(Vendedor.cpf == vendedor_cpf).first()
+            vendedor = bd.query(Vendedor).filter(cpf=cpf).first()
             if vendedor:
-                session.delete(vendedor)
-                session.commit()
+                bd.delete(vendedor)
+                bd.commit()
         except:
-            session.rollback()
+            bd.rollback()
     
     def listar_vendedores(bd):
         vendedores = bd.query(Vendedor).all
         for vendedor in vendedores:
             print(vendedor)
             
-<<<<<<< HEAD
-    def listar_ve(bd):
-=======
-    def listar_vendedor(cls, cpf):
->>>>>>> 0ce58418c25e6efa6d49313ecda4f5ff98197760
+    def listar_vendedor(bd):
         cpf = int(input())
         vendedor = bd.query(Vendedor).filter_by(cpf=cpf).first()
         if not vendedor:
