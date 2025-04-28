@@ -23,13 +23,22 @@ class VendedorService:
             #Erro se não for um turno válido
             session.rollback()
             pass
+    @classmethod
+    def deletar_vendedor(cls, session: bd, vendedor_cpf: int):
+        try:
+            vendedor = bd.query(Vendedor).filter(Vendedor.cpf == vendedor_cpf).first()
+            if vendedor:
+                session.delete(vendedor)
+                session.commit()
+        except:
+            session.rollback()
     
     def listar_vendedores(cls):
         vendedores = bd.query(Vendedor).all
         for vendedor in vendedores:
             print(vendedor)
             
-    def listar_ve(cls, cpf):
+    def listar_vendedor(cls, cpf):
         cpf = int(input())
         vendedor = bd.query(Vendedor).filter_by(cpf=cpf).first()
         if not vendedor:
