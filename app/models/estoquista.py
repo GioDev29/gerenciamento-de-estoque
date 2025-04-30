@@ -11,3 +11,4 @@ class Estoquista(Base, Pessoa):
     
     def __repr__(self):
         return f'<Estoquista(nome={self.nome}, turno={self.turno})>'
+    

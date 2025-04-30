@@ -36,7 +36,27 @@ class EstoquistaService:
             return
         else:
             print(estoquista)
+
+    def deletar_estoquista(bd):
+        try:
+            cpf = int(input("Insira o cpf(Somente números): "))
+            estoquista = bd.query(Estoquista).filter_by(cpf=cpf).first()
+
+            if not estoquista:
+                print("O estoquista não exite.")
+                return
             
-        
+            confirmacao = input(f"Tem certeza que deseja deletar o estoquista {estoquista.nome}? (S/N): ")
+
+            if confirmacao.upper() != 'S':
+                print("Operação cancelada pelo usuário.")
+                return
+            
+            bd.delete(estoquista)
+            bd.commit()
+
+            print("Estoquista removido com sucesso!")
+            return
     
-    
+        except Exception as e:
+            bd.rollback()
