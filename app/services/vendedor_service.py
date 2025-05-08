@@ -46,6 +46,40 @@ class VendedorService:
             return
         else:
             print(vendedor)
-        
-    
-    
+    def modificar_vendedor(cls, bd, vendedor_cpf: int):
+            try:
+                vendedor = bd.query(Vendedor).filter(Vendedor.cpf == vendedor_cpf).first()
+                if vendedor:
+
+                    novo_cpf_str = input(f"Alterar CPF ({vendedor.cpf} - Deixe em branco para manter: ")
+                    if novo_cpf_str:
+                        vendedor.cpf = int(novo_cpf_str)
+
+                    novo_nome = input(f"Alterar nome ({vendedor.nome} - Deixe em branco para manter: ")
+                    if novo_nome:
+                        vendedor.nome = novo_nome
+
+                    novo_email = input(f"Novo email ({vendedor.email} - Deixe em branco para manter: ")
+                    if novo_email:
+                        vendedor.email = novo_email
+
+                    novo_telefone = input(f"Novo telefone ({vendedor.telefone} - Deixe em branco para manter: ")
+                    if novo_telefone:
+                        vendedor.telefone = novo_telefone
+
+                    novo_turno = input(f"Novo turno ({vendedor.turno} - Digite M, T ou N, ou deixe em branco para manter: ").upper()
+                    if novo_turno:
+                        if novo_turno in ["M", "T", "N"]:
+                            vendedor.turno = novo_turno
+                        else:
+                            print("Turno inválido. Use M, T ou N.")
+
+                    novo_salario = input(f"Novo salário ({vendedor.salario} - Deixe em branco para manter: ")
+                    if novo_salario:
+                        vendedor.salario = float(novo_salario)
+
+                    bd.commit()
+                else:
+                    print(f"Vendedor com CPF: {vendedor_cpf} não encontrado.")
+            except:
+                bd.rollback()
