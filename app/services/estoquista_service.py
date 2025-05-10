@@ -1,4 +1,6 @@
 from models.estoquista import Estoquista
+from utils.exceptions import DuplicidadeDeCpf, DuplicidadeDeTelefone
+from sqlalchemy import exc
 
 class EstoquistaService:
     
@@ -9,20 +11,36 @@ class EstoquistaService:
             cpf = int(input("Insira o cpf (SOMENTE NÚMEROS): "))
             email = input("Insira o E-mail: ")
             telefone = input("Insira o Telefone: ")
-            turno = input("Insira o o Turno(M, T, N): ")
+            turno = input("Insira o o Turno(M, T, N): ").upper()
             salario = float(input("Insira o Salário: "))
+
+            if salario <= 0:
+                raise ValueError("Salário deve ser maior que zero!")
+            if turno not in ['M', 'T', 'N']:
+                raise ValueError("Turno inválido! Use M, T ou N.")
             
             estoquista = Estoquista(nome=nome,cpf=str(cpf),email=email,telefone=telefone,turno=turno,salario=salario)
             bd.add(estoquista)
             bd.commit()
-        except :
-            #Erro de duplicidade de cpf
-            #Erro de duplicidade de telefone
-            #Erro de salario negativo ou menor que 0
-            #Erro se não for um turno válido
+            print("Estoquista cadastrado com sucesso!")
+            
+        except ValueError as ve:
             bd.rollback()
-            pass
-    
+            print(f"Erro de validação: {ve}")
+        except sqlalchemy.exc.IntegrityError as ie:
+            bd.rollback()
+            if "cpf" in str(ie).lower():
+                print("Erro: CPF já cadastrado!")
+            elif "telefone" in str(ie).lower():
+                print("Erro: Telefone já cadastrado!")
+            elif "email" in str(ie).lower():
+                print("Erro: E-mail já cadastrado!")
+            else:
+                print(f"Erro de integridade no banco de dados: {ie}")
+        except Exception as e:
+            bd.rollback()
+            print(f"Erro inesperado: {e}")
+            
     def listar_estoquistas(bd):
         estoquistas = bd.query(Estoquista).all
         for estoquista in estoquistas:
