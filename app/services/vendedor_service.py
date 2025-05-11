@@ -1,4 +1,4 @@
-from models import Vendedor
+from models.vendedor import Vendedor
 
 class VendedorService:
     

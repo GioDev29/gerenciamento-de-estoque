@@ -1,7 +1,7 @@
-from models import Produto
+from models.produto import Produto
 
 class ProdutoService:
-    @classmethod
+    
     def criar_produto(cls, bd):
         try:
             id = int(input("Insira o ID do produto: "))
@@ -17,7 +17,7 @@ class ProdutoService:
         except:
             bd.rollback()
             pass
-    @classmethod
+    
     def deletar_produto(cls, bd, produto_id: int):
         try:
             produto = bd.query(Produto).filter(Produto.id == produto_id).first()

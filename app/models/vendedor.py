@@ -1,9 +1,9 @@
-from pessoa import Pessoa
+from .pessoa import Pessoa
 from database.conexao import Base
 from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 
-class Vendedor(Base, Pessoa):
+class Vendedor(Pessoa):
     __tablename__= 'vendedores'
     
     gerente_id = Column(Integer, ForeignKey('gerentes.id'))

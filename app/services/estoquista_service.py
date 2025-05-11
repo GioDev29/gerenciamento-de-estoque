@@ -4,7 +4,6 @@ from sqlalchemy import exc
 
 class EstoquistaService:
     
-    @staticmethod
     def criar_estoquista(bd):
         try:
             nome = input("Insira o nome: ")

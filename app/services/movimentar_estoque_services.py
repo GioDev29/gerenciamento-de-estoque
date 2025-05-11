@@ -2,7 +2,6 @@ from models.movimentarEstoque import MovimentacaoEstoque
 
 class MovimentarEstoque:
     
-    @staticmethod
     def criar_mov_estoque(bd):
         try:
             tipo = input("Insira o tipo(Entrada/Saida): ").lower()
@@ -44,6 +43,7 @@ class MovimentarEstoque:
             return
         else:
             print(mov_estoque)
+            
 
             
         

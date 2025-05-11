@@ -1,9 +1,8 @@
-from abc import ABC, abstractmethod
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey
 from database.conexao import Base
 
-class Pessoa(Base, ABC):
+class Pessoa(Base):
     __abstract__ = True
     
     id = Column(Integer, primary_key=True, index=True)
@@ -15,6 +14,5 @@ class Pessoa(Base, ABC):
     salario = Column(Numeric(10,2), nullable=False)
     data_criacao = Column(DateTime, default=datetime.utcnow)
     
-    @abstractmethod
-    def exibir_detalhes(self):
-        pass
+    def __repr__(self):
+        return f"<Produto(nome={self.nome})>"

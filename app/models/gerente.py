@@ -1,16 +1,16 @@
-from pessoa import Pessoa
+from .pessoa import Pessoa
 from database.conexao import Base
 from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
 from sqlalchemy.orm import relationship
 
-class Gerente(Base, Pessoa):
+class Gerente(Pessoa):
     __tablename__= 'gerentes'
     
     setor = Column(String(100), nullable=False)
     
     
     def __repr__(self):
-        return f'<Gerente(nome={self.nome})>'
+        return f'<Gerente(id={self.id}, nome={self.nome}, cpf={self.cpf})>'
 
 
 

@@ -1,24 +1,25 @@
-from database.conexao import SessionLocal, Base, engine, senha_acesso
-from services import vendedor_service, movimentar_estoque_services, gerente_services, estoquista_service
+from database.conexao import SessionLocal, Base, engine
+from utils import exceptions
+from services import gerente_services
+import re
 
 def menu_gerente(bd):
-    senha = int(input("Insira a senha de acesso: "))
-    if senha == senha_acesso:
-        print('\nEscolha uma opção:')
-        print('1. Cadastrar Vendedor')
-        print('2. Cadastrar Estoquista')
-        print('3. Listar Vendedores')
-        print('4. Listar Estoquistas\n')
-        print('_________________________')
-        print('5. Visualizar Estoque Total')
-        print('6. Visualizar Produto Especifico')
-        print('7. Atualizar estoque (Diminuir quantidade)')
-        print('8. Listar produtos com estoque baixo')
-        print('9. Sair')
-        opcao = input("Digite sua opção: ")
-        if opcao == '1':
-            vendedor_service.VendedorService.criar_vendedor(bd)
-        
+
+    print('\nEscolha uma opção:')
+    print('1. Cadastrar Gerente')
+    print('1. Cadastrar Vendedor')
+    print('2. Cadastrar Estoquista')
+    print('3. Listar Vendedores')
+    print('4. Listar Estoquistas\n')
+    print('_________________________')
+    print('5. Visualizar Estoque Total')
+    print('6. Visualizar Produto Especifico')
+    print('7. Atualizar estoque (Diminuir quantidade)')
+    print('8. Listar produtos com estoque baixo')
+    print('9. Sair')
+    opcao = input("Digite sua opção: ")
+    if opcao == '1':
+        gerente_services.GerenteServices.criar_gerente(bd)
 
 def menu_estoquista():
     print('1. Atualizar Informações Pessoais')
