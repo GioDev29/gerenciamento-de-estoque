@@ -15,7 +15,7 @@ class Produto(Base):
 
     
     def __repr__(self):
-        return f"<Produto(nome={self.nome}, preco_venda={self.preco_venda})>"
+        return f"<Produto(id = {self.id}, nome={self.nome}, preco_venda={self.preco_venda})>"
 
 
 '''
