@@ -38,3 +38,13 @@ class GerenteNaoExiste(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
         super().__init__(F"O gerente: {self.tipo} não existe.")
+
+class VendedorNaoExiste(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O vendedor: {self.tipo} não existe.")
+
+class ProdutoNaoExiste(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O vendedor: {self.tipo} não existe.")

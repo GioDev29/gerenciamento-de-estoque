@@ -75,7 +75,7 @@ class GerenteServices:
         gerente = bd.query(Gerente).filter_by(cpf=cpf_limpo).first()
         
         if not gerente:
-            raise GerenteNaoExiste
+            raise GerenteNaoExiste()
         
         print('O que deseja atualizar? ')
         print('------------------------')
