@@ -1,4 +1,5 @@
 from models.produto import Produto
+from utils.exceptions import ProdutoNaoExiste
 
 class ProdutoService:
     
@@ -39,36 +40,52 @@ class ProdutoService:
         else:
             print(produto)
     def modificar_produto(cls, bd, produto_id: int):
-                try:
-                    produto = bd.query(Produto).filter(Produto.id == produto_id).first()
-                    if produto:
+        produto = bd.query(Produto).filter(Produto.id == produto_id).first()
+        
+        if not produto:
+            raise ProdutoNaoExiste(produto_id)
 
-                        novo_id_str = input(f"Novo ID ({produto.id} - Deixe em branco para manter: ")
-                        if novo_id_str:
-                            produto.id = int(novo_id_str)
+        print('O que deseja atualizar? ')
+        print('------------------------')
+        print('\nEscolha uma opção:')
+        print('1. ID.')
+        print('2. Nome.')
+        print('3. Descrição')
+        print('4. Código')
+        print('5. Preço de Compra')
+        print('6. Preço de Venda')
+        print('7. Nenhuma das opções.')
+            
+        opcao = input('Opção: ')
 
-                        novo_nome = input(f"Novo nome ({produto.nome} - Deixe em branco para manter: ")
-                        if novo_nome:
-                            produto.nome = novo_nome
+        if opcao == '1': 
+            id = input("ID: ")
+            produto.id = id
 
-                        nova_descricao = input(f"Nova descrição ({produto.descricao} - Deixe em branco para manter: ")
-                        if nova_descricao:
-                            produto.descricao = nova_descricao
+        elif opcao == '2':
+            nome = input("Nome: ")
+            produto.nome = nome
 
-                        novo_codigo_str = input(f"Novo código ({produto.codigo} - Deixe em branco para manter: ")
-                        if novo_codigo_str:
-                            produto.codigo = int(novo_codigo_str)
+        elif opcao == '3':
+            descricao = input("Descrição: ")
+            produto.descricao = descricao
 
-                        novo_preco_compra_str = input(f"Novo preço de compra ({produto.preco_compra} - Deixe em branco para manter: ")
-                        if novo_preco_compra_str:
-                            produto.preco_compra = float(novo_preco_compra_str)
+        elif opcao == '4':
+            codigo = input("Código: ")
+            produto.codigo = codigo 
 
-                        novo_preco_venda_str = input(f"Novo preço de venda ({produto.preco_venda} - Deixe em branco para manter: ")
-                        if novo_preco_venda_str:
-                            produto.preco_venda = float(novo_preco_venda_str)
+        elif opcao == '5':
+            preco_compra = input("Preço de compra: ")
+            produto.preco_compra = preco_compra
 
-                        bd.commit()
-                    else:
-                        print(f"Produto com ID {produto_id} não encontrado.")
-                except:
-                    bd.rollback()
+        elif opcao == '6':
+            preco_venda = input("Preço de venda: ")
+            produto.preco_venda = preco_venda
+
+        elif opcao == '7':
+            print("Nenhuma alteração realizada.")
+            return
+        
+        else:
+            print('Opção inválida. Tente novamente.')
+            return

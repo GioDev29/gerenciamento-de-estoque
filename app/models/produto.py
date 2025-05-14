@@ -11,11 +11,11 @@ class Produto(Base):
     codigo = Column(Integer, nullable=False)
     preco_compra = Column(Numeric(10,2), nullable=False)
     preco_venda = Column(Numeric(10,2), nullable=False)
-    estoques = relationship('Estoque', back_populates='produtos')
+    estoques = relationship('Estoque', back_populates='produto')
 
     
     def __repr__(self):
-        return f"<Produto(nome={self.nome}, preco_venda={self.preco_venda})>"
+        return f"<Produto(id = {self.id}, nome={self.nome}, preco_venda={self.preco_venda})>"
 
 
 '''
