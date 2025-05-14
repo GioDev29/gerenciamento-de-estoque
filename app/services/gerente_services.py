@@ -4,6 +4,7 @@ import re
 
 class GerenteServices:
 
+    @staticmethod
     def criar_gerente(bd):
         nome = input("Insira o nome: ")
 
@@ -55,11 +56,13 @@ class GerenteServices:
 
         print(f"Gerente {nome} criado com sucesso.")
     
+    @staticmethod
     def listar_gerentes(bd):
         gerentes = bd.query(Gerente).all()
         for gerente in gerentes:
             print(gerente)
-            
+    
+    @staticmethod
     def listar_gerente(bd):
         cpf = input("Insira o cpf(Somente números): ")
         cpf_limpo = re.sub(r'\D', '', cpf)
@@ -69,7 +72,8 @@ class GerenteServices:
             raise GerenteNaoExiste(gerente)
         else:
             print(gerente)
-            
+    
+    @staticmethod
     def atualizar_gerente(bd, cpf):
         cpf_limpo = re.sub(r'\D', '', cpf)
         gerente = bd.query(Gerente).filter_by(cpf=cpf_limpo).first()
@@ -129,7 +133,8 @@ class GerenteServices:
         
         bd.commit()
         print("Gerente atualizado com sucesso.")
-        
+    
+    @staticmethod
     def deletar_gerente(bd):
         try:
             cpf = input("Insira o CPF (SOMENTE NÚMEROS): ")
@@ -137,7 +142,7 @@ class GerenteServices:
             
             gerente = bd.query(Gerente).filter_by(cpf=cpf_limpo).first()
             if not gerente:
-                raise GerenteNaoExiste("O gerente não exite.")
+                raise GerenteNaoExiste("O gerente não existe.")
             
             bd.delete(gerente)
             bd.commit()

@@ -12,17 +12,12 @@ class Gerente(Pessoa):
     def __repr__(self):
         return f'<Gerente(id={self.id}, nome={self.nome}, cpf={self.cpf})>'
 
+    @property
+    def setor(self):
+        return self._setor
 
-
-
-
-
-
-'''
-Criar Gerente
-Modificar Gerente
-Listar Gerentes
-Deletar Gerente
-Pesquisar Gerente
-
-'''
+    @setor.setter
+    def setor(self, valor):
+        if not valor:
+            raise ValueError("Setor não pode ser vazio.")
+        self._setor = valor

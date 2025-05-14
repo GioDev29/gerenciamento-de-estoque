@@ -13,15 +13,46 @@ class MovimentacaoEstoque(Base):
     id_user = Column(Integer, nullable=False)
     quantidade = Column(Integer, nullable=False)
     data = Column(DateTime, default=datetime.now)
+
+    @property
+    def tipo(self):
+        return self._tipo
+
+    @tipo.setter
+    def tipo(self, valor):
+        if not valor:
+            raise ValueError("O tipo não pode ser vazio.")
+        self._tipo = valor
+        
+    @property
+    def tipo_user(self):
+        return self._tipo_user
+
+    @tipo_user.setter
+    def tipo_user(self, valor):
+        if not valor:
+            raise ValueError("O usuário não pode ser vazio, informe se você é estoquista, gerente ou vendedor.")
+        self._tipo_user = valor
+        
+    @property
+    def id_user(self):
+        return self._id_user
     
-
-
-'''
-Criar Movimentação
-Listar todas Movimentações
-Modificar Movimentação
-Pesquisar Produto
-
-Quando for criar a funcionalidade de criar vendedor é necessário que tenha como ele colocar quem está fazendo a
-
-'''
+    @id_user.setter
+    def id_user(self, valor):
+        if not valor:
+            raise ValueError("O seu ID não pode ser vázio.")
+        self._id_user = valor
+        
+    @property
+    def quantidade(self):
+        return self._quantidade
+    
+    @quantidade.setter
+    def quantidade(self, valor):
+        if valor == 0:
+            raise ValueError("A quantidade não pode ser menor ou igual a zero.")
+        self._quantidade = valor
+        
+        
+  
