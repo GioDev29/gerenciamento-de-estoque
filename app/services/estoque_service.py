@@ -19,69 +19,95 @@ from utils.exceptions import (
 import re
 
 class EstoqueServices:
-    def __init__(self):
-        self.produtos = []
+    total_produtos = 0
+    qtd_minima = 15
     
-    def adicionar_produto(self, produto):
-        self.produtos.append(produto)
+    def __init__(self, bd):
+        self._bd = bd
+        self._produtos = []
 
-    @staticmethod
-    def criar_estoque(bd):
-        '''
-            id = Column(Integer, primary_key=True)
-            produto_id = Column(Integer, ForeignKey("produtos.id"), nullable=False)
-            produto = relationship('Produto', back_populates='estoques')
-            quantidade = Column(Integer, nullable=False)
-        '''
+    def adicionar_produto(self, produto):
+        if not isinstance(produto, Produto):
+            raise TypeError("Só pode adicionar objetos do tipo Produto")
+        if produto not in self._produtos:
+            self._produtos.append(produto)
+            EstoqueServices.total_produtos += 1
+        else:
+            print("Produto já está na lista!")
+
+    @property
+    def produtos(self):
+        return self._produtos
+    
+    @classmethod
+    def mostrar_total_produtos(cls):
+        print(f"Total de produtos adicionados: {cls.total_produtos}")
         
+    @classmethod
+    def listar_estoque_baixo(cls, bd):
+        produtos = bd.query(Produto).filter(Produto.quantidade <= cls.qtd_minima).all()
+
+        if not produtos:
+            print(f"Todos os produtos estão com estoque maiores que {cls.qtd_minima}!")
+            return
+
+        print("\nProdutos com estoque abaixo do mínimo:")
+        for produto in produtos:
+            print(f"- {produto.nome} | Quantidade: {produto.quantidade} | Mínimo ideal: {cls.qtd_minima}")
+
+    
+    def criar_estoque(self):
         try: 
             produto_id = int(input("Insira o ID do produto que deseja adicionar: "))
+            id_produto_existente = self.bd.query(Produto).filter_by(id=produto_id).first()
 
-            id_produto_existente = bd.query(Produto).filter_by(id=produto_id).first()
-            
             if id_produto_existente:
                 print(f"Encontramos o produto: {id_produto_existente.nome} com o ID: {produto_id}, ele será adicionado ao ESTOQUE.")
             else:
-                raise ProdutoNaoEncontrado(id_produto_existente)
+                raise ProdutoNaoEncontrado(produto_id)
             
-            qtd_prod = int(input('Qual a quantidade atual do produto que deseja adicionar ao Estoque?'))
+            qtd_prod = int(input('Qual a quantidade atual do produto que deseja adicionar ao Estoque? '))
             if qtd_prod < 0:
                 raise ErroNaQuantidade(qtd_prod)
+
             estoque = Estoque(
                 produto_id=produto_id,
                 quantidade=qtd_prod
             )
 
-            bd.add(estoque)
-            bd.commit()
+            self._bd.add(estoque)
+            self._bd.commit()
             print(f"O produto: {id_produto_existente.nome} foi adicionado ao estoque com sucesso!")
         except (ProdutoNaoEncontrado, ErroNaQuantidade) as e:
-            bd.rollback()
+            self._bd.rollback()
             print(e)
+        except ValueError:
+            print("Entrada inválida. Certifique-se de digitar números válidos.")
 
-    @staticmethod
-    def listar_produtos_estoque(bd):
-        produtos = bd.query(Produto).all()
+    def listar_produtos_estoque(self):
+        produtos = self._bd.query(Produto).all()
+        if not produtos:
+            print("Nenhum produto cadastrado.")
+            return
         for produto in produtos:
             print(produto)
-    
-    @staticmethod
-    def consultar_produto_estoque(bd):
+
+    def consultar_produto_estoque(self, id_produto):
         try:
-            id_produto = int(input("Insira o ID do Produto que deseja visualizar: "))
-            id_produto_existente = bd.query(Estoque).filter_by(produto_id=id_produto).first()
+            id_produto_existente = self._bd.query(Estoque).filter_by(produto_id=id_produto).first()
                 
             if id_produto_existente:
-                print(f"Encontramos o produto: {id_produto_existente.produto.nome} com o ID: {id_produto}, ele será adicionado ao ESTOQUE.")
+                print(f"Encontramos o produto: {id_produto_existente.produto.nome} com o ID: {id_produto}.")
             else:
                 raise ProdutoNaoEncontrado(id_produto)
         except ProdutoNaoEncontrado as e:
             print(e)
-    
-    @staticmethod
-    def atualizar_produto_estoque(bd, id_produto):
+        except ValueError:
+            print("ID inválido. Digite um número inteiro.")
+
+    def atualizar_produto_estoque(self, id_produto):
         try:
-            id_produto_existente = bd.query(Estoque).filter_by(produto_id=id_produto).first()
+            id_produto_existente = self._bd.query(Estoque).filter_by(produto_id=id_produto).first()
                 
             if id_produto_existente:
                 print(f"Encontramos o produto: {id_produto_existente.produto.nome} com o ID: {id_produto}.")
@@ -110,29 +136,29 @@ class EstoqueServices:
                 print('Opção inválida. Tente novamente.')
                 return
             
-            bd.commit()
+            self._bd.commit()
             print(f"{id_produto_existente.produto.nome} atualizado com sucesso.")
         except (ProdutoNaoEncontrado, ErroNaQuantidade) as e:
-            bd.rollback()
+            self._bd.rollback()
             print(e)
-            
-    
-    @staticmethod
-    def deletar_produto(bd):
-        id_produto = int(input("Insira o ID do Produto que deseja DELETAR: "))
+        except ValueError:
+            print("Entrada inválida. Digite um número inteiro para a quantidade.")
+
+    def deletar_produto(self):
         try:
-            id_produto_existente = bd.query(Estoque).filter_by(produto_id=id_produto).first()
+            id_produto = int(input("Insira o ID do Produto que deseja DELETAR: "))
+            id_produto_existente = self._bd.query(Estoque).filter_by(produto_id=id_produto).first()
                     
             if id_produto_existente:
                 print(f"Encontramos o produto: {id_produto_existente.produto.nome} com o ID: {id_produto}.")
             else:
                 raise ProdutoNaoEncontrado(id_produto)
                 
-            bd.delete(id_produto_existente)
-            bd.commit()
+            self._bd.delete(id_produto_existente)
+            self._bd.commit()
+            print(f"Produto com ID {id_produto} deletado com sucesso.")
         except ProdutoNaoEncontrado as e:
-            bd.rollback()
+            self._bd.rollback()
             print(str(e))
-            
-    
-            
+        except ValueError:
+            print("ID inválido. Digite um número inteiro.")

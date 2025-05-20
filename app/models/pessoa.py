@@ -1,28 +1,22 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Numeric, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Numeric
 from database.conexao import Base
 
-
-'''
-Essa classe pessoa é uma classe abstrata, ela é herdada por Gerente, Vendedor e Estoquista.
-Ao usarmos ela, estamos praticando a herança.
-Quando usamos o getters e setters aqui, eles são usados pelas classes filhas e se torna um comportamento básico delas. Então, eles são reutilizados sem precisar reescreve-los, praticando o polimorfismo. 
-'''
-
 class Pessoa(Base):
-    __abstract__ = True
-    
+    __abstract__ = True 
+
     id = Column(Integer, primary_key=True, index=True)
-    nome = Column(String(100), nullable=False)
-    cpf = Column(String(14), unique=True, nullable=False)
-    email = Column(String(100), unique=True)
-    telefone = Column(String(20))
-    turno = Column(String(1), nullable=False)
-    salario = Column(Numeric(10,2), nullable=False)
+    _nome = Column("nome", String(100), nullable=False)
+    _cpf = Column("cpf", String(14), unique=True, nullable=False)
+    _email = Column("email", String(100), unique=True)
+    _telefone = Column("telefone", String(20))
+    _turno = Column("turno", String(1), nullable=False)
+    _salario = Column("salario", Numeric(10,2), nullable=False)
     data_criacao = Column(DateTime, default=datetime.utcnow)
-    
+
     def __repr__(self):
         return f"<Pessoa(nome={self.nome})>"
+
     
     @property
     def nome(self):
@@ -43,7 +37,7 @@ class Pessoa(Base):
         if len(valor) != 11:
             raise ValueError("CPF deve ter 11 dígitos.")
         self._cpf = valor
-        
+
     @property
     def email(self):
         return self._email
@@ -63,23 +57,23 @@ class Pessoa(Base):
         if len(valor) < 11:
             raise ValueError("Telefone deve ter 11 dígitos.")
         self._telefone = valor
-        
+
     @property
     def turno(self):
         return self._turno
 
     @turno.setter
     def turno(self, valor):
-        if len(valor) > 1:
-            raise ValueError("Escreva M, T ou N")
-        self._turno = valor
-        
+        if valor.upper() not in ["M", "T", "N"]:
+            raise ValueError("Turno deve ser M (Manhã), T (Tarde) ou N (Noite)")
+        self._turno = valor.upper()
+
     @property
     def salario(self):
         return self._salario
 
     @salario.setter
     def salario(self, valor):
-        if len(valor) < 0:
+        if valor < 0:
             raise ValueError("O salário não pode ser negativo")
         self._salario = valor

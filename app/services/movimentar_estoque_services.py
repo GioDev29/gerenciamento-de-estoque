@@ -18,15 +18,10 @@ from utils.exceptions import (
 )
 
 class MovimentarEstoque:
-    
-    
-    
-    '''
-    Esses métodos que coloquei não necessitam de uma instancia da classe.
-    '''
-    
-    @staticmethod
-    def criar_mov_estoque(bd):
+    def __init__(self, bd):
+        self._bd = bd
+
+    def criar_mov_estoque(self):
         try:
             tipo = input("Insira o tipo de entrada (ENTRADA/SAIDA): ").upper()
             produto_id = int(input("Insira o ID do produto: "))
@@ -34,7 +29,7 @@ class MovimentarEstoque:
             id_user = int(input("Insira o seu ID: "))
             adicionar_diminuir = input("Digite 1 se quer diminuir a quantidade ou 2 para adicionar. [1, 2]: ")
 
-            produto = bd.query(Produto).filter_by(id=produto_id).first()  # Corrigido para Produto
+            produto = self._bd.query(Produto).filter_by(id=produto_id).first()
             if not produto:
                 print("Produto não encontrado.")
                 return
@@ -71,11 +66,11 @@ class MovimentarEstoque:
             # Checa o tipo de usuário
             user = None
             if tipo_user == 'GERENTE':
-                user = bd.query(Gerente).filter_by(id=id_user).first()
+                user = self._bd.query(Gerente).filter_by(id=id_user).first()
             elif tipo_user == 'VENDEDOR':
-                user = bd.query(Vendedor).filter_by(id=id_user).first()
+                user = self._bd.query(Vendedor).filter_by(id=id_user).first()
             elif tipo_user == 'ESTOQUISTA':
-                user = bd.query(Estoquista).filter_by(id=id_user).first()
+                user = self._bd.query(Estoquista).filter_by(id=id_user).first()
 
             if not user:
                 raise UsuarioNaoEncontrado(id_user)
@@ -88,50 +83,52 @@ class MovimentarEstoque:
                 qtd=quantidade if adicionar_diminuir == '2' else -quantidade
             )
 
-            bd.add(mov_estoque)
-            bd.commit()
+            self._bd.add(mov_estoque)
+            self._bd.commit()
             print("Movimentação registrada com sucesso!")
 
         except (ProdutoNaoEncontrado, SemMovimentacaoError, TipoUsuaioError, UsuarioNaoEncontrado, ErroNaQuantidade) as e:
-            bd.rollback()
+            self._bd.rollback()
             print(f"Erro: {e}")
         except Exception as e:
-            bd.rollback()
+            self._bd.rollback()
             print(f"Erro inesperado: {e}")
-    
-    @staticmethod
-    def listar_movs_estoque(bd):
-        mov_estoque = bd.query(MovimentacaoEstoque).all()  # Corrigido o método .all()
+
+    def listar_movs_estoque(self):
+        mov_estoque = self._bd.query(MovimentacaoEstoque).all()
         for mov in mov_estoque:
             print(f"ID: {mov.id}, Tipo: {mov.tipo}, Produto: {mov.produto_id}, Quantidade: {mov.qtd}, Data: {mov.data}")
 
-    @staticmethod
-    def listar_mov_estoque(bd):
-        tipo = input("Insira se você quer ver as Entradas ou Saidas (Entrada/Saida): ").upper()
-        
-        if tipo not in ['ENTRADA', 'SAIDA']:
-            raise SemMovimentacaoError(tipo)
-        
-        id_prod = int(input("Digite o ID do produto: "))
-        produto = bd.query(Produto).filter_by(id=id_prod).first()
-        if not produto:
-            raise ProdutoNaoEncontrado(id_prod)
-        
-        mov_estoque = bd.query(MovimentacaoEstoque).filter_by(produto_id=id_prod, tipo=tipo).all()  # Corrigido o método .all()
-        
-        if not mov_estoque:
-            print(f'A movimentação do tipo {tipo} para o produto {id_prod} não foi encontrada.')
-            return
-        else:
-            for mov in mov_estoque:
-                print(f"ID Movimentação: {mov.id}, Tipo: {mov.tipo}, Quantidade: {mov.qtd}, Data: {mov.data}")
-
-    @staticmethod
-    def listar_mov_estoque_produto(bd):
+    def listar_mov_estoque(self):
         try:
-            produto_id = int(input("Insira o ID do produto que deseja ver: "))  # Corrigido para int
-            mov_estoque = bd.query(MovimentacaoEstoque).filter_by(produto_id=produto_id).all()  # Corrigido o método .all()
-            
+            tipo = input("Insira se você quer ver as Entradas ou Saidas (Entrada/Saida): ").upper()
+
+            if tipo not in ['ENTRADA', 'SAIDA']:
+                raise SemMovimentacaoError(tipo)
+
+            id_prod = int(input("Digite o ID do produto: "))
+            produto = self._bd.query(Produto).filter_by(id=id_prod).first()
+            if not produto:
+                raise ProdutoNaoEncontrado(id_prod)
+
+            mov_estoque = self._bd.query(MovimentacaoEstoque).filter_by(produto_id=id_prod, tipo=tipo).all()
+
+            if not mov_estoque:
+                print(f'A movimentação do tipo {tipo} para o produto {id_prod} não foi encontrada.')
+                return
+            else:
+                for mov in mov_estoque:
+                    print(f"ID Movimentação: {mov.id}, Tipo: {mov.tipo}, Quantidade: {mov.qtd}, Data: {mov.data}")
+        except (SemMovimentacaoError, ProdutoNaoEncontrado) as e:
+            print(f"Erro: {e}")
+        except ValueError:
+            print("ID inválido. Insira um número inteiro.")
+
+    def listar_mov_estoque_produto(self):
+        try:
+            produto_id = int(input("Insira o ID do produto que deseja ver: "))
+            mov_estoque = self._bd.query(MovimentacaoEstoque).filter_by(produto_id=produto_id).all()
+
             if not mov_estoque:
                 print(f'Não tem movimentação do produto com o ID {produto_id}')
                 return

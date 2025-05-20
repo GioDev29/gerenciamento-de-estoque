@@ -1,14 +1,11 @@
 from .pessoa import Pessoa
-from database.conexao import Base
-from sqlalchemy import Column, Integer, String, Numeric, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String
 
 class Gerente(Pessoa):
-    __tablename__= 'gerentes'
+    __tablename__ = 'gerentes'
     
-    setor = Column(String(100), nullable=False)
-    
-    
+    _setor = Column("setor", String(100), nullable=False)
+
     def __repr__(self):
         return f'<Gerente(id={self.id}, nome={self.nome}, cpf={self.cpf})>'
 

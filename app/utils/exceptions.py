@@ -43,11 +43,15 @@ class ErroNaQuantidade(Exception):
         self.qtd = qtd
         super().__init__(f"A quantidade '{self.qtd}' é inválida. Deve ser maior que zero.")
 
-
 class SalarioNegativo(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
         super().__init__(F"O salário não pode ser negativo.")
+        
+class PrecoNegativo(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O preço não pode ser negativo ou igual a zero.")
 
 class TelefoneJaExiste(Exception):
     def __init__(self, tipo):
@@ -58,3 +62,18 @@ class GerenteNaoExiste(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
         super().__init__(F"O gerente: {self.tipo} não existe.")
+        
+class VendedorNaoExiste(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O vendedor: {self.tipo} não existe.")
+
+class CpfJaExistente(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O CPF: {self.tipo} já existe.")
+
+class ProdutoNaoExiste(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O Produto: {self.tipo} não existe.")
