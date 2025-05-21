@@ -7,6 +7,16 @@ class DuplicidadeDeTelefone(Exception):
     def __init__(self, telefone):
         self.telefone = telefone
         super().__init__(f"O telefone '{self.telefone}' já está cadastrado.")
+        
+class TelefoneJaExiste(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O telefone {self.tipo} já existe. Tente novamente")
+
+class TelefoneInvalido(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O telefone {self.tipo} é inválido. Ex: +55 11 999999999")
 
 class EmailJaExisteException(Exception):
     def __init__(self, email):
@@ -22,11 +32,6 @@ class UsuarioNaoEncontrado(Exception):
     def __init__(self, id_usuario):
         self.id_usuario = id_usuario
         super().__init__(f"Usuário com ID '{self.id_usuario}' não foi encontrado.")
-
-class GerenteNaoExiste(Exception):
-    def __init__(self, id_gerente):
-        self.id_gerente = id_gerente
-        super().__init__(f"O gerente com ID '{self.id_gerente}' não existe.")
 
 class SemMovimentacaoError(Exception):
     def __init__(self, tipo):
@@ -53,10 +58,13 @@ class PrecoNegativo(Exception):
         self.tipo = tipo
         super().__init__(F"O preço não pode ser negativo ou igual a zero.")
 
-class TelefoneJaExiste(Exception):
+
+
+class EstoquistaJaExiste(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
-        super().__init__(F"O telefone {self.tipo} já existe. Tente novamente")
+        super().__init__(F"O Estoquista {self.tipo} já existe. Tente novamente")
+
 
 class GerenteNaoExiste(Exception):
     def __init__(self, tipo):
@@ -68,12 +76,42 @@ class VendedorNaoExiste(Exception):
         self.tipo = tipo
         super().__init__(F"O vendedor: {self.tipo} não existe.")
 
+class EstoquistaNaoExiste(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O estoquista: {self.tipo} não existe.")
+
 class CpfJaExistente(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
         super().__init__(F"O CPF: {self.tipo} já existe.")
 
+class CpfInvalido(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O CPF: {self.tipo} precisa ter 11 digitos.")
+
 class ProdutoNaoExiste(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
         super().__init__(F"O Produto: {self.tipo} não existe.")
+        
+class ProdutoJaExiste(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O Produto: {self.tipo} já existe.")
+
+class IdVazio(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O ID não pode ser vazio.")
+
+class NomeInvalido(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O Nome: {self.tipo} é inválido, precisa ter mais que 2 letras.")
+
+class TurnoInvalido(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O Turno: {self.tipo} é inválido. Somente M(Manhã), T(Tarde) e N(Noite).")

@@ -10,7 +10,6 @@ class Estoquista(Pessoa):
 
     def __repr__(self):
         return (
-            f'<Estoquista(id={self.id}, nome={self.nome}, turno={self.turno}, '
-            f'cpf={self.cpf}, telefone={self.telefone}, salario={self.salario}, '
-            f'data_criacao={self.data_criacao})>'
+            f'\nEstoquista - ID {self.id} || Nome: {self.nome}, Turno: {self.turno}, '
+            f'CPF: {self.cpf}, Telefone: {self.telefone}, Salário: {self.salario} ||'
         )

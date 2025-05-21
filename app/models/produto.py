@@ -16,7 +16,7 @@ class Produto(Base):
     estoques = relationship("Estoque", back_populates="produto")
 
     def __repr__(self):
-        return f"<Produto(id={self.id}, nome='{self.nome}', codigo={self.codigo}, preco_venda={self.preco_venda})>"
+        return f"{self.nome} - ID: {self.id} || Código de barras: {self.codigo}, Preço Venda: {self.preco_venda}, Preço Compra: {self._preco_compra} ||"
 
     @property
     def nome(self):

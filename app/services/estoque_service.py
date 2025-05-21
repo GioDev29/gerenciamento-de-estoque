@@ -62,7 +62,7 @@ class EstoqueServices:
             id_produto_existente = self.bd.query(Produto).filter_by(id=produto_id).first()
 
             if id_produto_existente:
-                print(f"Encontramos o produto: {id_produto_existente.nome} com o ID: {produto_id}, ele será adicionado ao ESTOQUE.")
+                print(f"Encontramos o produto: {id_produto_existente._nome} com o ID: {produto_id}, ele será adicionado ao ESTOQUE.")
             else:
                 raise ProdutoNaoEncontrado(produto_id)
             
@@ -71,13 +71,13 @@ class EstoqueServices:
                 raise ErroNaQuantidade(qtd_prod)
 
             estoque = Estoque(
-                produto_id=produto_id,
-                quantidade=qtd_prod
+                _produto_id=produto_id,
+                _quantidade=qtd_prod
             )
 
             self._bd.add(estoque)
             self._bd.commit()
-            print(f"O produto: {id_produto_existente.nome} foi adicionado ao estoque com sucesso!")
+            print(f"O produto: {id_produto_existente._nome} foi adicionado ao estoque com sucesso!")
         except (ProdutoNaoEncontrado, ErroNaQuantidade) as e:
             self._bd.rollback()
             print(e)
@@ -94,10 +94,10 @@ class EstoqueServices:
 
     def consultar_produto_estoque(self, id_produto):
         try:
-            id_produto_existente = self._bd.query(Estoque).filter_by(produto_id=id_produto).first()
+            id_produto_existente = self._bd.query(Estoque).filter_by(_produto_id=id_produto).first()
                 
             if id_produto_existente:
-                print(f"Encontramos o produto: {id_produto_existente.produto.nome} com o ID: {id_produto}.")
+                print(f"Encontramos o produto: {id_produto_existente.produto._nome} com o ID: {id_produto}.")
             else:
                 raise ProdutoNaoEncontrado(id_produto)
         except ProdutoNaoEncontrado as e:
@@ -107,7 +107,7 @@ class EstoqueServices:
 
     def atualizar_produto_estoque(self, id_produto):
         try:
-            id_produto_existente = self._bd.query(Estoque).filter_by(produto_id=id_produto).first()
+            id_produto_existente = self._bd.query(Estoque).filter_by(_produto_id=id_produto).first()
                 
             if id_produto_existente:
                 print(f"Encontramos o produto: {id_produto_existente.produto.nome} com o ID: {id_produto}.")
@@ -123,21 +123,21 @@ class EstoqueServices:
             opcao = input('Opção: ')
             if opcao == '1':
                 nome = input("Nome Novo: ")
-                id_produto_existente.produto.nome = nome
+                id_produto_existente.produto._nome = nome
                 
             elif opcao == '2':
                 qtd = int(input("Nova quantidade, INSIRA A QUANTIDADE -TOTAL- NOVA: "))
                 if qtd < 0:
                     raise ErroNaQuantidade(qtd)
                 
-                id_produto_existente.quantidade = qtd
+                id_produto_existente._quantidade = qtd
             
             else:
                 print('Opção inválida. Tente novamente.')
                 return
             
             self._bd.commit()
-            print(f"{id_produto_existente.produto.nome} atualizado com sucesso.")
+            print(f"{id_produto_existente.produto._nome} atualizado com sucesso.")
         except (ProdutoNaoEncontrado, ErroNaQuantidade) as e:
             self._bd.rollback()
             print(e)
@@ -147,10 +147,10 @@ class EstoqueServices:
     def deletar_produto(self):
         try:
             id_produto = int(input("Insira o ID do Produto que deseja DELETAR: "))
-            id_produto_existente = self._bd.query(Estoque).filter_by(produto_id=id_produto).first()
+            id_produto_existente = self._bd.query(Estoque).filter_by(_produto_id=id_produto).first()
                     
             if id_produto_existente:
-                print(f"Encontramos o produto: {id_produto_existente.produto.nome} com o ID: {id_produto}.")
+                print(f"Encontramos o produto: {id_produto_existente.produto._nome} com o ID: {id_produto}.")
             else:
                 raise ProdutoNaoEncontrado(id_produto)
                 

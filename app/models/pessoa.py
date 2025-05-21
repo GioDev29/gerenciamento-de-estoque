@@ -1,6 +1,19 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Numeric
 from database.conexao import Base
+from utils.exceptions import (
+    EmailJaExisteException,
+    CpfJaExistente,
+    SalarioNegativo,
+    TelefoneJaExiste,
+    GerenteNaoExiste,
+    ProdutoNaoEncontrado,
+    PrecoNegativo,
+    EstoquistaJaExiste,
+    EstoquistaNaoExiste,
+    IdVazio, 
+    
+)
 
 class Pessoa(Base):
     __abstract__ = True 

@@ -7,7 +7,10 @@ class Gerente(Pessoa):
     _setor = Column("setor", String(100), nullable=False)
 
     def __repr__(self):
-        return f'<Gerente(id={self.id}, nome={self.nome}, cpf={self.cpf})>'
+        return (
+            f'\nGerente - ID {self.id} || Setor: {self._setor}, Nome: {self.nome}, Turno: {self.turno}, '
+            f'CPF: {self.cpf}, Telefone: {self.telefone}, Salário: {self.salario} ||'
+        )
 
     @property
     def setor(self):

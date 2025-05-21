@@ -29,30 +29,26 @@ class MovimentarEstoque:
             id_user = int(input("Insira o seu ID: "))
             adicionar_diminuir = input("Digite 1 se quer diminuir a quantidade ou 2 para adicionar. [1, 2]: ")
 
+            
             produto = self._bd.query(Produto).filter_by(id=produto_id).first()
             if not produto:
-                print("Produto não encontrado.")
-                return
+                raise ProdutoNaoEncontrado(produto_id)
+                
+            estoque = self._bd.query(Estoque).filter_by(_produto_id = produto_id).first()
 
-            try:
-                quantidade = int(input("Digite a quantidade: "))
-            except ValueError:
-                print("Quantidade inválida. Digite um número inteiro.")
-                return
-
-            if quantidade <= 0:
-                print("A quantidade deve ser maior que zero.")
-                return
+            quantidade = int(input("Digite a quantidade: "))
+            if quantidade < 0: 
+                raise ErroNaQuantidade(quantidade)
 
             if adicionar_diminuir == '1':
-                if produto.quantidade < quantidade:
+                if estoque._quantidade < quantidade:
                     print("Erro: quantidade no estoque é menor do que a desejada para remover.")
                     return
-                produto.quantidade -= quantidade
-                print(f"Quantidade atual do produto após remoção: {produto.quantidade}")
+                estoque._quantidade -= quantidade
+                print(f"Quantidade atual do produto após remoção: {estoque._quantidade}")
             elif adicionar_diminuir == '2':
-                produto.quantidade += quantidade
-                print(f"Quantidade atual do produto após adição: {produto.quantidade}")
+                estoque._quantidade += quantidade
+                print(f"Quantidade atual do produto após adição: {estoque._quantidade}")
             else:
                 print("Insira um valor válido (1 para diminuir, 2 para adicionar).")
                 return
@@ -63,7 +59,6 @@ class MovimentarEstoque:
             if tipo_user not in ['GERENTE', 'VENDEDOR', 'ESTOQUISTA']:
                 raise TipoUsuaioError(tipo_user)
 
-            # Checa o tipo de usuário
             user = None
             if tipo_user == 'GERENTE':
                 user = self._bd.query(Gerente).filter_by(id=id_user).first()
@@ -76,11 +71,11 @@ class MovimentarEstoque:
                 raise UsuarioNaoEncontrado(id_user)
 
             mov_estoque = MovimentacaoEstoque(
-                tipo=tipo,
+                _tipo=tipo,
                 produto_id=produto.id,
-                tipo_user=tipo_user,
-                id_user=id_user,
-                qtd=quantidade if adicionar_diminuir == '2' else -quantidade
+                _tipo_user=tipo_user,
+                _id_user=id_user,
+                _quantidade=quantidade if adicionar_diminuir == '2' else -quantidade
             )
 
             self._bd.add(mov_estoque)
@@ -89,7 +84,7 @@ class MovimentarEstoque:
 
         except (ProdutoNaoEncontrado, SemMovimentacaoError, TipoUsuaioError, UsuarioNaoEncontrado, ErroNaQuantidade) as e:
             self._bd.rollback()
-            print(f"Erro: {e}")
+            print(e)
         except Exception as e:
             self._bd.rollback()
             print(f"Erro inesperado: {e}")
@@ -111,14 +106,14 @@ class MovimentarEstoque:
             if not produto:
                 raise ProdutoNaoEncontrado(id_prod)
 
-            mov_estoque = self._bd.query(MovimentacaoEstoque).filter_by(produto_id=id_prod, tipo=tipo).all()
+            mov_estoque = self._bd.query(MovimentacaoEstoque).filter_by(produto_id=id_prod, _tipo=tipo).all()
 
             if not mov_estoque:
                 print(f'A movimentação do tipo {tipo} para o produto {id_prod} não foi encontrada.')
                 return
             else:
                 for mov in mov_estoque:
-                    print(f"ID Movimentação: {mov.id}, Tipo: {mov.tipo}, Quantidade: {mov.qtd}, Data: {mov.data}")
+                    print(f"ID Movimentação: {mov.id}, Tipo: {mov._tipo}, Quantidade: {mov._quantidade}, Data: {mov.data}")
         except (SemMovimentacaoError, ProdutoNaoEncontrado) as e:
             print(f"Erro: {e}")
         except ValueError:
@@ -134,6 +129,6 @@ class MovimentarEstoque:
                 return
             else:
                 for mov in mov_estoque:
-                    print(f"ID: {mov.id}, Tipo: {mov.tipo}, Quantidade: {mov.qtd}, Data: {mov.data}")
+                    print(f"ID: {mov.id}, Tipo: {mov._tipo}, Quantidade: {mov._quantidade}, Data: {mov.data}")
         except ValueError:
             print("ID do produto inválido. Insira um número inteiro.")

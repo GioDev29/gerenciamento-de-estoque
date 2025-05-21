@@ -9,4 +9,7 @@ class Vendedor(Pessoa):
     gerente = relationship('Gerente', backref='vendedores')
 
     def __repr__(self):
-        return f'<Vendedor(id={self.id}, nome={self.nome}, cpf={self.cpf})>'
+        return (
+            f'\n Vendedor - ID {self.id} || Nome: {self.nome}, Turno: {self.turno}, '
+            f'CPF: {self.cpf}, Telefone: {self.telefone}, Salário: {self.salario} ||'
+        )

@@ -1,5 +1,16 @@
 from models.produto import Produto
-from utils.exceptions import ProdutoNaoExiste
+from models.estoque import Estoque
+from utils.exceptions import (
+    GerenteNaoExiste,
+    EmailJaExisteException,
+    CpfJaExistente,
+    TelefoneJaExiste,
+    SalarioNegativo,
+    VendedorNaoExiste,
+    ProdutoNaoExiste,
+    ProdutoJaExiste,
+    ErroNaQuantidade
+)
 
 class ProdutoService:
     def __init__(self, bd):
@@ -13,31 +24,55 @@ class ProdutoService:
             codigo = int(input("Insira o código do produto: "))
             preco_compra = float(input("Insira o preço de compra do produto: "))
             preco_venda = float(input("Insira o preço de venda do produto: "))
-            
+
+            codigo_existe = self._bd.query(Produto).filter_by(_codigo=codigo).first()
+            if codigo_existe:
+                raise ProdutoJaExiste(codigo)
+
             produto = Produto(
                 id=id,
-                nome=nome,
+                _nome=nome,
                 descricao=descricao,
-                codigo=codigo,
-                preco_compra=preco_compra,
-                preco_venda=preco_venda
+                _codigo=codigo,
+                _preco_compra=preco_compra,
+                _preco_venda=preco_venda
             )
             self._bd.add(produto)
+            self._bd.flush()  
+
+            qtd_inicial = int(input("Qual a quantidade inicial no estoque? "))
+            if qtd_inicial < 0:
+                raise ErroNaQuantidade(qtd_inicial)
+
+            estoque = Estoque(
+                _produto_id=produto.id,
+                _quantidade=qtd_inicial
+            )
+            self._bd.add(estoque)
+
             self._bd.commit()
-            print("Produto criado com sucesso!")
+            print("Produto e estoque criados com sucesso!")
+
+        except (ProdutoJaExiste, ErroNaQuantidade) as e:
+            self._bd.rollback()
+            print(e)
         except Exception as e:
             self._bd.rollback()
             print(f"Erro ao criar produto: {e}")
 
-    def deletar_produto(self, produto_id: int):
+
+    def deletar_produto(self, codigo_barras):
         try:
-            produto = self._bd.query(Produto).filter(Produto.id == produto_id).first()
+            produto = self._bd.query(Produto).filter_by(Produto._codigo == codigo_barras).first()
             if produto:
                 self._bd.delete(produto)
                 self._bd.commit()
-                print(f"Produto com ID {produto_id} deletado.")
+                print(f"Produto com Codigo de Barras {codigo_barras} deletado.")
             else:
-                print(f"Produto com ID {produto_id} não encontrado.")
+                raise ProdutoNaoExiste(codigo_barras)
+        except ProdutoNaoExiste as p:
+            print(p)
+            self._bd.rollback()
         except Exception as e:
             self._bd.rollback()
             print(f"Erro ao deletar produto: {e}")
@@ -55,14 +90,16 @@ class ProdutoService:
             id = int(input("Digite o ID do produto que deseja ver: "))
             produto = self._bd.query(Produto).filter_by(id=id).first()
             if not produto:
-                print(f'O produto com ID "{id}" não foi encontrado.')
-                return
+                raise ProdutoNaoExiste(id)
             print(produto)
+        except ProdutoNaoExiste as p:
+            print(p)
+            self._bd.rollback()
         except ValueError:
             print("ID inválido. Digite um número inteiro.")
 
-    def modificar_produto(self, produto_id: int):
-        produto = self._bd.query(Produto).filter(Produto.id == produto_id).first()
+    def modificar_produto(self, produto_id):
+        produto = self._bd.query(Produto).filter_by(Produto.id == produto_id).first()
         if not produto:
             raise ProdutoNaoExiste(produto_id)
 
