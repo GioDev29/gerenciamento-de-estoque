@@ -18,7 +18,6 @@ class ProdutoService:
 
     def criar_produto(self):
         try:
-            id = int(input("Insira o ID do produto: "))
             nome = input("Insira o nome do produto: ")
             descricao = input("Insira a descrição do produto: ")
             codigo = int(input("Insira o código do produto: "))
@@ -29,8 +28,7 @@ class ProdutoService:
             if codigo_existe:
                 raise ProdutoJaExiste(codigo)
 
-            produto = Produto(
-                id=id,
+            produto = Produto( 
                 _nome=nome,
                 descricao=descricao,
                 _codigo=codigo,
@@ -49,10 +47,10 @@ class ProdutoService:
                 _quantidade=qtd_inicial
             )
             self._bd.add(estoque)
-
+            print("ESTOQUE")
             self._bd.commit()
             print("Produto e estoque criados com sucesso!")
-
+            return produto
         except (ProdutoJaExiste, ErroNaQuantidade) as e:
             self._bd.rollback()
             print(e)

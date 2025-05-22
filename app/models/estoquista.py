@@ -6,7 +6,7 @@ class Estoquista(Pessoa):
     __tablename__ = 'estoquistas'
     
     gerente_id = Column(Integer, ForeignKey("gerentes.id"), nullable=False)
-    gerente = relationship('Gerente', backref='estoquistas')  # <- corrigido aqui
+    gerente = relationship('Gerente', backref='estoquistas') 
 
     def __repr__(self):
         return (

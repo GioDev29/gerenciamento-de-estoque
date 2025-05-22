@@ -17,7 +17,8 @@ from utils.exceptions import (
     NomeInvalido,
     EstoquistaJaExiste,
     TelefoneInvalido,
-    TurnoInvalido
+    TurnoInvalido,
+    EmailInvalido
 )
 
 class VendedorService(CRUDAbstrato):
@@ -45,6 +46,7 @@ class VendedorService(CRUDAbstrato):
                 raise CpfJaExistente(cpf_limpo)
             
             email = input("Insira o E-mail: ")
+            email_limpo = Validacoes.validar_email(email)
             if Validacoes.email_ja_existe(self._bd, email):
                 raise EmailJaExisteException(email)
             
@@ -58,7 +60,7 @@ class VendedorService(CRUDAbstrato):
                 raise TurnoInvalido(turno)
             
             salario = float(input("Insira o Salário: "))
-            if Validacoes.salario_negativo():
+            if Validacoes.salario_negativo(salario):
                 raise SalarioNegativo(salario)
             
 
@@ -66,7 +68,7 @@ class VendedorService(CRUDAbstrato):
             vendedor = Vendedor(
                 _nome=nome,
                 _cpf=cpf_limpo,
-                _email=email,
+                _email=email_limpo,
                 _telefone=telefone_limpo,
                 _turno=turno,
                 _salario=salario,
@@ -75,7 +77,8 @@ class VendedorService(CRUDAbstrato):
 
             self._bd.add(vendedor)
             self._bd.commit()
-        except (GerenteNaoExiste, EmailJaExisteException, CpfJaExistente, TelefoneJaExiste, SalarioNegativo, NomeInvalido, IdVazio, TelefoneInvalido, CpfInvalido, TurnoInvalido) as e:
+            print(f'Vendedor: {nome} criado com sucesso!')
+        except (GerenteNaoExiste, EmailJaExisteException, CpfJaExistente, TelefoneJaExiste, SalarioNegativo, NomeInvalido, IdVazio, TelefoneInvalido, CpfInvalido, TurnoInvalido, EmailInvalido) as e:
             print(e)
             self._bd.rollback()
             return
@@ -128,6 +131,23 @@ class VendedorService(CRUDAbstrato):
             return
         for vendedor in vendedores:
             print(vendedor)
+            
+    def listar_vendedores_gerente(self, id_gerente):
+        gerente = self._bd.query(Gerente).filter_by(id=id_gerente).first()
+        if not gerente:
+            print("Gerente não encontrado.")
+            return
+
+        vendedores = self._bd.query(Vendedor).filter_by(gerente_id=id_gerente).all()
+
+        if not vendedores:
+            print(f"Não existem vendedores associados a(o) gerente {gerente._nome} no momento.")
+            return
+
+        print(f"\nVendedores do(a) gerente {gerente._nome}:\n")
+        for vendedor in vendedores:
+            print(f"- {vendedor._nome} | CPF: {vendedor._cpf}")
+
 
     def listar_vendedor(self):
         cpf = input("Digite o CPF para buscar: ")
@@ -175,9 +195,10 @@ class VendedorService(CRUDAbstrato):
                 vendedor._nome = nome
             elif opcao == '2':
                 email = input("Novo email: ")
-                if Validacoes.email_ja_existe(self._bd, email):
-                    raise EmailJaExisteException(email)
-                vendedor._email = email
+                email_limpo = Validacoes.validar_email(email)
+                if Validacoes.email_ja_existe(self._bd, email_limpo):
+                    raise EmailJaExisteException(email_limpo)
+                vendedor._email = email_limpo
             elif opcao == '3':
                 telefone = input("Novo telefone: ")
                 telefone_limpo = Validacoes.validar_telefone(telefone)

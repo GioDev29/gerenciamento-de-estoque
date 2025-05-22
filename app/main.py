@@ -8,6 +8,10 @@ from models.vendedor import Vendedor
 from models.estoquista import Estoquista
 from utils.validacoes import Validacoes
 from utils.exceptions import (CpfInvalido, CpfJaExistente, EstoquistaNaoExiste, VendedorNaoExiste, GerenteNaoExiste)
+import os
+
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def buscar_usuario_por_cpf(bd, tipo_usuario, cpf):
     model = {
@@ -17,33 +21,17 @@ def buscar_usuario_por_cpf(bd, tipo_usuario, cpf):
     }[tipo_usuario]
     return bd.query(model).filter_by(_cpf=cpf).first()
 
-def menu_gerente(bd, gerente):
+def menu_gerente_info(bd, gerente):
+    limpar_tela()
     while True:
-        print('\nMenu Gerente:')
-        print('\nInformações Gerente ----')
-        print('1. Visualizar dados')
-        print('2. Atualizar dados')
+        print('Informações Gerente')
+        print('1. Visualizar Dados Pessoais')
+        print('2. Atualizar Dados')
+        print('3. Visualizar Outros Gestores')
+        print('4. Visualizar Equipe')
+        print('0. Voltar')
         
-        print('\nInformações dos Vendedores e Estoquistas ----')
-        print('3. Cadastrar Vendedor')
-        print('4. Cadastrar Estoquista')
-        print('5. Listar Vendedores')
-        print('6. Listar Estoquistas')
-        
-        print('\nFuncionalidade dos produtos dos Produtos ----')
-        print('7. Adicionar um Novo Produto')
-        print('8. Atualizar um Produto Existente')
-        print('8. Visualizar Produto Específico')
-        print('10. Listar produtos com estoque baixo')
-        print('11. Alterar preço de venda do produto')
-        
-        print('\nFuncionalidades do Estoque ----')
-        print('7. Visualizar Todo o Estoque')
-        print('9. Atualizar Estoque (Diminuir/Adicionar quantidade)')
-
-        print('0. Sair')
-
-        opcao = input('Escolha: ')
+        opcao = input('\nEscolha: ')
         if opcao == '1':
             gerente_s = gerente_services.GerenteService(bd)
             gerente_s.listar_dados(gerente._cpf)
@@ -51,51 +39,141 @@ def menu_gerente(bd, gerente):
             gerente_s = gerente_services.GerenteService(bd)
             gerente_s.atualizar(gerente._cpf)
         elif opcao == '3':
+            gerente_s = gerente_services.GerenteService(bd)
+            gerente_s.listar_tudo()
+        elif opcao == '4':
+            gerente_s = gerente_services.GerenteService(bd)
+            gerente_s.listar_funcionarios(gerente.id)
+        elif opcao == '0':
+            return
+
+def menu_gerente_funcionarios(bd, gerente):
+    limpar_tela()
+    while True:
+        print('\nFuncionalidades Vendedores e Estoquistas ----')
+        print('1. Cadastrar Vendedor')
+        print('2. Cadastrar Estoquista')
+        print('3. Listar Vendedores')
+        print('4. Listar Estoquistas')
+        print('0. Voltar\n')
+        
+        opcao = input('\nEscolha: ')
+        if opcao == '1':
             vendedor_s = vendedor_service.VendedorService(bd)
             vendedor_s.criar(gerente.id)
-        elif opcao == '4':
+        elif opcao == '2':
             estoquista_s = estoquista_service.EstoquistaService(bd)
             estoquista_s.criar(gerente.id)
-        elif opcao == '5':
+        elif opcao == '3':
             vendedor_s = vendedor_service.VendedorService(bd)
-            vendedor_s.listar_tudo()
-        elif opcao == '6':
+            vendedor_s.listar_vendedores_gerente(gerente.id)
+        elif opcao == '4':
             estoquista_s = estoquista_service.EstoquistaService(bd)
-            estoquista_s.listar_tudo()
-        elif opcao == '7':
+            estoquista_s.listar_estoquistas_gerente(gerente.id)
+        elif opcao == '0':
+            return
+
+def menu_gerente_produtos(bd, gerente):
+    limpar_tela()
+    while True:
+        print('\nFuncionalidade dos produtos dos Produtos ----')
+        print('1. Adicionar um Novo Produto')
+        print('2. Atualizar um Produto Existente')
+        print('3. Visualizar Todos os Produtos')
+        print('4. Visualizar Produto Específico')
+        print('5. Listar produtos com estoque baixo')
+        print('6. Alterar preço de venda do produto')
+        print('0. Voltar\n')
+        
+        opcao = input('\nEscolha: ')
+        
+        if opcao == '1':
+            produto_s = ProdutoService(bd)
+            produto = produto_s.criar_produto()
             estoque_s = EstoqueServices(bd)
-            estoque_s.listar_produtos_estoque()
-        elif opcao == '8':
+            estoque_s.adicionar_produto(produto)
+        elif opcao == '2':
             produto_id = int(input("ID do produto: "))
-            estoque_s = EstoqueServices(bd)
-            estoque_s.consultar_produto_estoque(produto_id)
-        elif opcao == '9':
-            mov_s = MovimentarEstoque(bd)
-            mov_s.criar_mov_estoque()
-        elif opcao == '10':
-            EstoqueServices.listar_estoque_baixo(bd)
-        elif opcao == '11':
+            produto_s = ProdutoService(bd)
+            produto_s.modificar_produto(produto_id)
+        elif opcao == '3': 
             produto_s = ProdutoService(bd)
             produto_s.listar_produtos()
+        elif opcao == '4':
+            produto_s = ProdutoService(bd)
+            produto_s.listar_produto()
+        elif opcao == '5':
+            EstoqueServices.listar_estoque_baixo(bd)
+        elif opcao == '6':
             gerente_s = gerente_services.GerenteService(bd)
             gerente_s.alterar_precos()
+        elif opcao == '0':
+            return
+        
+def menu_gerente_estoque(bd, gerente):
+    limpar_tela()
+    while True:
+        print('\nFuncionalidades do Estoque ----')
+        print('1. Visualizar Todo o Estoque')
+        print('2. Registrar Entradas e Saídas de Estoque')
+        print('0. Voltar\n')
+        
+        opcao = input('\nEscolha: ')
+        if opcao == '1':
+            estoque_s = EstoqueServices(bd)
+            estoque_s.listar_produtos_estoque()
+        elif opcao == '2':
+            mov_s = MovimentarEstoque(bd)
+            mov_s.criar_mov_estoque()
+        elif opcao == '0':
+            return
+
+def menu_gerente(bd, gerente):
+    limpar_tela()
+    while True:
+        print("="*50)
+        print('\t\tMENU GERENTE')
+        print("="*50)
+        print('1. Informações Gerente')
+        print('2. Vendedores e Estoquistas')
+        print('3. Produtos')
+        print('4. Estoque')
+        print('0. Sair')
+
+        opcao = input('\nEscolha: ')
+        if opcao == '1':
+            menu_gerente_info(bd, gerente)
+        elif opcao == '2':
+            menu_gerente_funcionarios(bd, gerente)
+        elif opcao == '3':
+            menu_gerente_produtos(bd, gerente)
+        elif opcao == '4':
+            menu_gerente_estoque(bd, gerente)
         elif opcao == '0':
             break
         else:
             print('Opção inválida!')
+            return
 
 def menu_estoquista(bd, estoquista):
+    limpar_tela()
     while True:
-        print('\nMenu Estoquista:')
+        print("="*50)
+        print('\nMENU ESTOQUISTA:')
+        print("="*50)
         print('\nInformações Estoquista ----')
         print('1. Visualizar Informações Pessoais')
         print('2. Atualizar Informações Pessoais')
+        print('3. Equipe')
 
-        print('\nInformações Informações do Estoque e Produtos ----')
-        print('3. Visualizar Todo o Estoque')
-        print('4. Visualizar Produto Específico')
-        print('5. Registrar Entradas e Saídas de Estoque')
-        print('6. Listar Produtos com Estoque Baixo')
+        print('\nInformações do Estoque e Produtos ----')
+        print('3. Visualizar Todos os Produtos')
+        print('4. Visualizar Todo o Estoque')
+        # ADICIONAR VISUALIZAR PRODUTO ESPECIFICO
+        # ADICIONAR ATUALIZAR PRODUTO
+        print('5. Visualizar Produto Específico')
+        print('6. Registrar Entradas e Saídas de Estoque')
+        print('7. Listar Produtos com Estoque Baixo')
         print('0. Sair')
 
         opcao = input('Escolha: ')
@@ -106,16 +184,19 @@ def menu_estoquista(bd, estoquista):
             estoquista_s = estoquista_service.EstoquistaService(bd)
             estoquista_s.atualizar(estoquista._cpf)
         elif opcao == '3':
+            gerente_s = gerente_services.GerenteService(bd)
+            gerente_s.listar_funcionarios(estoquista.gerente_id)     
+        elif opcao == '4':
             estoque_s = EstoqueServices(bd)
             estoque_s.listar_produtos_estoque()
-        elif opcao == '4':
+        elif opcao == '5':
             produto_id = int(input("ID do produto: "))
             estoque_s = EstoqueServices(bd)
             estoque_s.consultar_produto_estoque(produto_id)
-        elif opcao == '5':
+        elif opcao == '6':
             mov_s = MovimentarEstoque(bd)
             mov_s.criar_mov_estoque()
-        elif opcao == '6':
+        elif opcao == '7':
             EstoqueServices.listar_estoque_baixo(bd)
         elif opcao == '0':
             break
@@ -123,17 +204,23 @@ def menu_estoquista(bd, estoquista):
             print('Opção inválida!')
 
 def menu_vendedor(bd, vendedor):
+    limpar_tela()
     while True:
-        print('\nMenu Vendedor:')
+        print("="*50)
+        print('\nMENU VENDEDOR\n')
+        print("="*50)
         print('\nInformações do Vendedor ----')
         print('1. Visualizar Informações Pessoais')
         print('2. Atualizar Informações Pessoais')
+        print('3. Equipe')
 
-        print('\nInformações Informações do Estoque e Produtos ----')
-        print('3. Visualizar Todo o Estoque')
-        print('4. Visualizar Produto Específico')
-        print('5. Registrar Entradas e Saídas de Estoque')
-        print('6. Listar Produtos com Estoque Baixo')
+        print('\nInformações do Estoque e Produtos ----')
+        print('4. Visualizar Todos os Produtos')
+        print('5. Visualizar Todo o Estoque')
+        # ADICIONAR VISUALIZAR PRODUTO ESPECIFICO
+        print('6. Visualizar Produto Específico')
+        print('7. Registrar Entradas e Saídas de Estoque')
+        print('8. Listar Produtos com Estoque Baixo')
         print('0. Sair')
 
         opcao = input('Escolha: \n')
@@ -144,16 +231,19 @@ def menu_vendedor(bd, vendedor):
             vendedor_s = vendedor_service.VendedorService(bd)
             vendedor_s.atualizar(vendedor._cpf)
         elif opcao == '3':
+            gerente_s = gerente_services.GerenteService(bd)
+            gerente_s.listar_funcionarios(vendedor.gerente_id)   
+        elif opcao == '4':
             estoque_s = EstoqueServices(bd)
             estoque_s.listar_produtos_estoque()
-        elif opcao == '4':
+        elif opcao == '5':
             produto_id = int(input("ID do produto: "))
             estoque_s = EstoqueServices(bd)
             estoque_s.consultar_produto_estoque(produto_id)
-        elif opcao == '5':
+        elif opcao == '6':
             mov_s = MovimentarEstoque(bd)
             mov_s.criar_mov_estoque()
-        elif opcao == '6':
+        elif opcao == '7':
             EstoqueServices.listar_estoque_baixo(bd)
         elif opcao == '0':
             break
@@ -164,21 +254,23 @@ def main():
     Base.metadata.create_all(engine)
     bd = SessionLocal()
     
-    gerente_s = gerente_services.GerenteService(bd)
-    gerente_s.listar_tudo()
-
     while True:
+        print("="*50)
+        print("Bem-vindo ao Sistema de Estoque da Loja")
         print('\nEscolha sua visão:')
         print('1. Visão Gerente')
         print('2. Visão Estoquista')
         print('3. Visão Vendedor')
         print('4. Sair')
+        print("="*50)
 
-        opcao = input('Opção: ')
-
+        opcao = input('\nOpção: ')
         if opcao == '4':
-            print('Tchau!')
+            print("Até logo :D")
+
             break
+        while opcao == '':
+            opcao = input('Opção: ')
         
         try: 
             tipo_usuario = None
@@ -187,7 +279,8 @@ def main():
                 
                 opcao_cadastro = input("Gerente já cadastrado? (S/N) ").upper()
                 if opcao_cadastro == 'S':
-                    pass
+                    cpf = input(f'Digite o CPF do {tipo_usuario.lower()}: ')    
+                    cpf_limpo = Validacoes.validar_cpf(cpf)  
                 elif opcao_cadastro == 'N':
                     gerente_s = gerente_services.GerenteService(bd)
                     cpf = input(f'Digite o CPF do {tipo_usuario.lower()}: ')
@@ -206,25 +299,9 @@ def main():
             else:
                 print('Opção inválida. Tente novamente.')
                 continue
-            
-            while True:
-                try:
-                    cpf = input(f'Digite o CPF do {tipo_usuario.lower()}: ')
-                    cpf_limpo = Validacoes.validar_cpf(cpf)
-                    break 
-                except CpfInvalido as e:
-                    print(e)
 
-            while not Validacoes.cpf_ja_existe(bd, cpf_limpo):
-                while True:
-                    try:
-                        cpf = input(f'Digite o CPF do {tipo_usuario.lower()}: ')
-                        cpf_limpo = Validacoes.validar_cpf(cpf)
-                        break
-                    except CpfInvalido as e:
-                        print(e)
 
-            usuario = buscar_usuario_por_cpf(bd, tipo_usuario, cpf)
+            usuario = buscar_usuario_por_cpf(bd, tipo_usuario, cpf_limpo)
 
             if not usuario:
                 if tipo_usuario == 'GERENTE':
@@ -235,10 +312,10 @@ def main():
                     raise VendedorNaoExiste(cpf_limpo)
         except (CpfInvalido, CpfJaExistente, GerenteNaoExiste, VendedorNaoExiste, EstoquistaNaoExiste) as e:
             print(e)
-            return
+            continue
         except (Exception, ValueError) as e:
             print(e)
-            return
+            continue
         
         if tipo_usuario == 'GERENTE':
             menu_gerente(bd, usuario)

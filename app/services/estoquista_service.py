@@ -18,7 +18,8 @@ from utils.exceptions import (
     CpfInvalido,
     NomeInvalido,
     TelefoneInvalido,
-    TurnoInvalido
+    TurnoInvalido,
+    EmailInvalido
 )
 
 import re
@@ -42,6 +43,7 @@ class EstoquistaService(CRUDAbstrato):
                 raise CpfJaExistente(cpf_limpo)
             
             email = input("Insira o E-mail: ")
+            email_limpo = Validacoes.validar_email(email)
             if Validacoes.email_ja_existe(self._bd, email):
                 raise EmailJaExisteException(email)
             
@@ -54,18 +56,13 @@ class EstoquistaService(CRUDAbstrato):
             if turno not in ['M', 'T', 'N']:
                 raise TurnoInvalido(turno)
             salario = float(input("Insira o Salário: "))
-            if Validacoes.salario_negativo():
+            if Validacoes.salario_negativo(salario):
                 raise SalarioNegativo(salario)
-            
-            gerente = self._bd.query(Gerente).filter_by(id=id_gerente).first()
-            if not gerente:
-                raise GerenteNaoExiste(id_gerente)
-
 
             estoquista = Estoquista(
                 _nome=nome,
                 _cpf=cpf_limpo,
-                _email=email,
+                _email=email_limpo,
                 _telefone=telefone_limpo,
                 _turno=turno,
                 _salario=salario,
@@ -76,7 +73,7 @@ class EstoquistaService(CRUDAbstrato):
             self._bd.commit()
             print("Estoquista cadastrado com sucesso!")
 
-        except (GerenteNaoExiste, EstoquistaJaExiste, IdVazio, CpfInvalido, NomeInvalido, CpfJaExistente, TelefoneInvalido, TurnoInvalido) as ve:
+        except (GerenteNaoExiste, EstoquistaJaExiste, IdVazio, CpfInvalido, NomeInvalido, CpfJaExistente, TelefoneInvalido, TurnoInvalido, EmailInvalido) as ve:
             self._bd.rollback()
             print(f"Erro de validação: {ve}")
             return
@@ -94,6 +91,19 @@ class EstoquistaService(CRUDAbstrato):
             return
         for estoquista in estoquistas:
             print(estoquista)
+            
+    def listar_estoquistas_gerente(self, id_gerente):
+        estoquistas = self._bd.query(Estoquista).filter_by(gerente_id=id_gerente).all()
+        gerente = self._bd.query(Gerente).filter_by(id=id_gerente).first()
+
+        if not estoquistas:
+            print(f"Não existem estoquistas associados a(o) gerente {gerente._nome} no momento.")
+            return
+
+        print(f"\nEstoquistas do(a) gerente {gerente._nome}:\n")
+        for estoquista in estoquistas:
+            print(f"- {estoquista._nome} | CPF: {estoquista._cpf}")
+
 
     def listar_estoquista(self):
         cpf = input("Insira o CPF (SOMENTE NÚMEROS): ")
@@ -140,9 +150,10 @@ class EstoquistaService(CRUDAbstrato):
                 estoquista.nome = nome
             elif opcao == '2':
                 email = input("Novo email: ")
-                if Validacoes.email_ja_existe(self._bd, email):
-                    raise EmailJaExisteException(email)
-                estoquista._email = email
+                email_limpo = Validacoes.validar_email(email)
+                if Validacoes.email_ja_existe(self._bd, email_limpo):
+                    raise EmailJaExisteException(email_limpo)
+                estoquista._email = email_limpo
             elif opcao == '3':
                 telefone = input("Novo telefone: ")
                 telefone_limpo = re.sub(r'\D', '', telefone)
@@ -163,7 +174,7 @@ class EstoquistaService(CRUDAbstrato):
 
             self._bd.commit()
             print("Atualização realizada com sucesso.")
-        except (EstoquistaNaoExiste, EmailJaExisteException, TelefoneJaExiste, NomeInvalido, TurnoInvalido) as e:
+        except (EstoquistaNaoExiste, EmailJaExisteException, TelefoneJaExiste, NomeInvalido, TurnoInvalido, EmailInvalido) as e:
             self._bd.rollback()
             print(e)
             return

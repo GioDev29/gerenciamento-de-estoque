@@ -1,4 +1,3 @@
-import re
 from models.gerente import Gerente
 from models.produto import Produto
 from models.estoquista import Estoquista
@@ -17,7 +16,8 @@ from utils.exceptions import (
     EstoquistaJaExiste, 
     TelefoneInvalido,
     NomeInvalido,
-    TurnoInvalido
+    TurnoInvalido,
+    EmailInvalido
 )
 
 class GerenteService(CRUDAbstrato):
@@ -27,6 +27,7 @@ class GerenteService(CRUDAbstrato):
     def alterar_precos(self):
         produtos = self._bd.query(Produto).all()
         if not produtos:
+            print('Não existem produtos adicionados.')
             return
         
         id_produto = int(input("Insira o ID do produto que deseja modificar o Preço de Venda: "))
@@ -58,8 +59,10 @@ class GerenteService(CRUDAbstrato):
                 raise CpfJaExistente(cpf_limpo)
 
             email = input("Insira o E-mail: ")
+            email_limpo = Validacoes.validar_email(email)
             if Validacoes.email_ja_existe(self._bd, email):
                 raise EmailJaExisteException(email)
+            
             telefone = input("Insira o Telefone: ")
             telefone_limpo = Validacoes.validar_telefone(telefone)
             if Validacoes.telefone_ja_existe(self._bd, telefone_limpo):
@@ -70,7 +73,7 @@ class GerenteService(CRUDAbstrato):
                 raise TurnoInvalido(turno)
 
             salario = float(input("Insira o Salário: "))
-            if Validacoes.salario_negativo():
+            if Validacoes.salario_negativo(salario):
                 raise SalarioNegativo(salario)
 
             setor = input("Qual o setor? ")
@@ -78,7 +81,7 @@ class GerenteService(CRUDAbstrato):
             gerente = Gerente(
                 _nome=nome,
                 _cpf=cpf_limpo,
-                _email=email,
+                _email=email_limpo,
                 _telefone=telefone_limpo,
                 _turno=turno,
                 _salario=salario,
@@ -89,7 +92,7 @@ class GerenteService(CRUDAbstrato):
             self._bd.commit()
 
             print(f"Gerente {nome} criado com sucesso.")
-        except (SalarioNegativo, CpfInvalido, EmailJaExisteException, CpfJaExistente, TelefoneJaExiste, SalarioNegativo, TelefoneInvalido, TurnoInvalido) as e:
+        except (SalarioNegativo, CpfInvalido, EmailJaExisteException, CpfJaExistente, TelefoneJaExiste, SalarioNegativo, TelefoneInvalido, TurnoInvalido, EmailInvalido) as e:
             print(e)
             self._bd.rollback()
             return
@@ -119,8 +122,27 @@ class GerenteService(CRUDAbstrato):
             print(g)
             return
         
+    def listar_funcionarios(self, id_gerente):
+        estoquistas = self._bd.query(Estoquista).filter_by(gerente_id=id_gerente).all()
+        vendedores = self._bd.query(Vendedor).filter_by(gerente_id=id_gerente).all()
+        gerente = self._bd.query(Gerente).filter_by(id=id_gerente).first()
+
+        if not estoquistas and not vendedores:
+            print(f"Não existem estoquistas e vendedores associados a(o) gerente {gerente._nome} no momento.")
+            return
+
+        if estoquistas:
+            print(f"\nEstoquistas do gerente {gerente._nome}:\n")
+            for estoquista in estoquistas:
+                print(f"- {estoquista._nome} | E-mail: {estoquista._email}")
+
+        if vendedores:
+            print(f"\nVendedores do gerente {gerente._nome}:\n")
+            for vendedor in vendedores:
+                print(f"- {vendedor._nome} | E-mail: {vendedor._email}")
+        
     def listar_dados(self, cpf):
-        cpf_limpo = GerenteService.validar_cpf(cpf)
+        cpf_limpo = Validacoes.validar_cpf(cpf)
 
         try:
             gerente = self._bd.query(Gerente).filter_by(_cpf=cpf_limpo).first()
@@ -157,9 +179,10 @@ class GerenteService(CRUDAbstrato):
 
             elif opcao == '2':
                 email = input("Novo email: ")
-                if Validacoes.email_ja_existe(self._bd, email):
-                    raise EmailJaExisteException(email)
-                gerente._email = email
+                email_limpo = Validacoes.validar_email(email)
+                if Validacoes.email_ja_existe(self._bd, email_limpo):
+                    raise EmailJaExisteException(email_limpo)
+                gerente._email = email_limpo
 
             elif opcao == '3':
                 telefone = input("Novo telefone: ")
@@ -184,7 +207,7 @@ class GerenteService(CRUDAbstrato):
 
             self._bd.commit()
             print("Gerente atualizado com sucesso.")
-        except (GerenteNaoExiste, EmailJaExisteException, TelefoneJaExiste, NomeInvalido,TurnoInvalido) as e:
+        except (GerenteNaoExiste, EmailJaExisteException, TelefoneJaExiste, NomeInvalido,TurnoInvalido, EmailInvalido) as e:
             print(e)
             self._bd.rollback()
             return

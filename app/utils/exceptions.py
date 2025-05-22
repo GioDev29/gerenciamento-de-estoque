@@ -115,3 +115,8 @@ class TurnoInvalido(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
         super().__init__(F"O Turno: {self.tipo} é inválido. Somente M(Manhã), T(Tarde) e N(Noite).")
+
+class EmailInvalido(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O E-mail: {self.tipo} é inválido, precisa ter mais que 14 letras.")

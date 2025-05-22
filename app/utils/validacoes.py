@@ -1,7 +1,7 @@
 from models.estoquista import Estoquista
 from models.gerente import Gerente
 from models.vendedor import Vendedor
-from .exceptions import (TelefoneInvalido, CpfInvalido)
+from .exceptions import (TelefoneInvalido, CpfInvalido, EmailInvalido)
 import re
 
 class Validacoes:
@@ -48,3 +48,9 @@ class Validacoes:
         if len(telefone_limpo) > 14:
             raise TelefoneInvalido(telefone_limpo)
         return telefone_limpo
+    
+    @staticmethod
+    def validar_email(email):
+        if len(email) < 15:
+            raise EmailInvalido(email)
+        return email
