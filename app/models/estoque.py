@@ -11,7 +11,7 @@ class Estoque(Base):
     _quantidade = Column("quantidade", Integer, nullable=False)
 
     def __repr__(self):
-        return f'<Estoque(produto_id={self.produto_id}, produto_nome={self.produto.nome}, quantidade_atual={self.quantidade})>'
+        return f'{self.produto._nome} - {self.produto_id} || Quantidade - {self._quantidade} ||'
 
     @property
     def produto_id(self):

@@ -120,3 +120,13 @@ class EmailInvalido(Exception):
     def __init__(self, tipo):
         self.tipo = tipo
         super().__init__(F"O E-mail: {self.tipo} é inválido, precisa ter mais que 14 letras.")
+
+class ValorInvalido(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O valor: {self.tipo} é inválido, não pode ser negativo ou igual a zero.")
+        
+class TextoInvalido(Exception):
+    def __init__(self, tipo):
+        self.tipo = tipo
+        super().__init__(F"O Texto: {self.tipo} é inválido, não pode ter menos que 3 caracteres.")

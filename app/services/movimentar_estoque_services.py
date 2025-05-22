@@ -1,9 +1,5 @@
-from models.produto import Produto
-from models.gerente import Gerente
-from models.vendedor import Vendedor
-from models.estoquista import Estoquista
-from models.movimentarEstoque import MovimentacaoEstoque
-from models.estoque import Estoque
+from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
+from utils.validacoes import Validacoes
 from utils.exceptions import (
     DuplicidadeDeCpf,
     DuplicidadeDeTelefone,
@@ -23,59 +19,47 @@ class MovimentarEstoque:
 
     def criar_mov_estoque(self):
         try:
-            tipo = input("Insira o tipo de entrada (ENTRADA/SAIDA): ").upper()
-            produto_id = int(input("Insira o ID do produto: "))
-            tipo_user = input("Insira o tipo de usuario (GERENTE, VENDEDOR OU ESTOQUISTA): ").upper()
-            id_user = int(input("Insira o seu ID: "))
-            adicionar_diminuir = input("Digite 1 se quer diminuir a quantidade ou 2 para adicionar. [1, 2]: ")
-
+            tipo = input("Insira o tipo de entrada (ENTRADA/SAIDA): ").strip().upper()
+            if tipo not in ['ENTRADA', 'SAIDA']:
+                raise SemMovimentacaoError(tipo)
             
+            produto_id = int(input("Insira o ID do produto: ").strip())
             produto = self._bd.query(Produto).filter_by(id=produto_id).first()
             if not produto:
                 raise ProdutoNaoEncontrado(produto_id)
-                
+            
+            tipo_user = input("Insira o tipo de usuario (GERENTE, VENDEDOR OU ESTOQUISTA): ").strip().upper()
+            if tipo_user not in ['GERENTE', 'VENDEDOR', 'ESTOQUISTA']:
+                raise TipoUsuaioError(tipo_user)
+            
+            id_user = int(input("Insira o seu ID: ").strip())
+            if not Validacoes.buscar_usuario_por_id(self._bd, tipo_user, id_user):
+                raise ValueError(f'Não existe um {tipo_user.lower()} com o ID: {id_user}')
+              
             estoque = self._bd.query(Estoque).filter_by(_produto_id = produto_id).first()
-
-            quantidade = int(input("Digite a quantidade: "))
+            if not estoque:
+                raise ValueError('Esse produto não existe no estoque.')
+            quantidade = int(input("Digite a quantidade: ").strip())
             if quantidade < 0: 
                 raise ErroNaQuantidade(quantidade)
 
-            if adicionar_diminuir == '1':
+            if tipo == 'SAIDA':
                 if estoque._quantidade < quantidade:
-                    print("Erro: quantidade no estoque é menor do que a desejada para remover.")
-                    return
+                    raise ValueError(f"A quantidade desse produto é insuficiente. Quantidade: {estoque._quantidade}")
                 estoque._quantidade -= quantidade
                 print(f"Quantidade atual do produto após remoção: {estoque._quantidade}")
-            elif adicionar_diminuir == '2':
+            elif tipo == 'ENTRADA':
                 estoque._quantidade += quantidade
                 print(f"Quantidade atual do produto após adição: {estoque._quantidade}")
             else:
-                print("Insira um valor válido (1 para diminuir, 2 para adicionar).")
-                return
-
-            if tipo not in ['ENTRADA', 'SAIDA']:
-                raise SemMovimentacaoError(tipo)
-
-            if tipo_user not in ['GERENTE', 'VENDEDOR', 'ESTOQUISTA']:
-                raise TipoUsuaioError(tipo_user)
-
-            user = None
-            if tipo_user == 'GERENTE':
-                user = self._bd.query(Gerente).filter_by(id=id_user).first()
-            elif tipo_user == 'VENDEDOR':
-                user = self._bd.query(Vendedor).filter_by(id=id_user).first()
-            elif tipo_user == 'ESTOQUISTA':
-                user = self._bd.query(Estoquista).filter_by(id=id_user).first()
-
-            if not user:
-                raise UsuarioNaoEncontrado(id_user)
+                raise ValueError("Insira um valor válido (1 para diminuir, 2 para adicionar).")
 
             mov_estoque = MovimentacaoEstoque(
                 _tipo=tipo,
                 produto_id=produto.id,
                 _tipo_user=tipo_user,
                 _id_user=id_user,
-                _quantidade=quantidade if adicionar_diminuir == '2' else -quantidade
+                _quantidade=quantidade if tipo == 'ENTRADA' else -quantidade
             )
 
             self._bd.add(mov_estoque)
@@ -92,16 +76,15 @@ class MovimentarEstoque:
     def listar_movs_estoque(self):
         mov_estoque = self._bd.query(MovimentacaoEstoque).all()
         for mov in mov_estoque:
-            print(f"ID: {mov.id}, Tipo: {mov.tipo}, Produto: {mov.produto_id}, Quantidade: {mov.qtd}, Data: {mov.data}")
+            print(f"{mov.produto._nome.upper()} - ID {mov.produto_id}|| ID Movimentação: {mov.id}, Tipo: {mov._tipo} , Quantidade: {mov._quantidade}, Data: {mov.data}")
 
     def listar_mov_estoque(self):
         try:
-            tipo = input("Insira se você quer ver as Entradas ou Saidas (Entrada/Saida): ").upper()
-
+            tipo = input("Insira se você quer ver as Entradas ou Saidas (Entrada/Saida): ").strip().upper()
             if tipo not in ['ENTRADA', 'SAIDA']:
                 raise SemMovimentacaoError(tipo)
 
-            id_prod = int(input("Digite o ID do produto: "))
+            id_prod = int(input("Digite o ID do produto: ").strip())
             produto = self._bd.query(Produto).filter_by(id=id_prod).first()
             if not produto:
                 raise ProdutoNaoEncontrado(id_prod)
@@ -109,26 +92,27 @@ class MovimentarEstoque:
             mov_estoque = self._bd.query(MovimentacaoEstoque).filter_by(produto_id=id_prod, _tipo=tipo).all()
 
             if not mov_estoque:
-                print(f'A movimentação do tipo {tipo} para o produto {id_prod} não foi encontrada.')
+                raise ValueError(f'A movimentação do tipo {tipo} para o produto {id_prod} não foi encontrada.')
                 return
             else:
                 for mov in mov_estoque:
                     print(f"ID Movimentação: {mov.id}, Tipo: {mov._tipo}, Quantidade: {mov._quantidade}, Data: {mov.data}")
         except (SemMovimentacaoError, ProdutoNaoEncontrado) as e:
             print(f"Erro: {e}")
-        except ValueError:
-            print("ID inválido. Insira um número inteiro.")
+            return
+        except Exception as e:
+            print(f"Erro: {e}")
+            return
 
     def listar_mov_estoque_produto(self):
         try:
-            produto_id = int(input("Insira o ID do produto que deseja ver: "))
+            produto_id = int(input("Insira o ID do produto que deseja ver: ").strip())
             mov_estoque = self._bd.query(MovimentacaoEstoque).filter_by(produto_id=produto_id).all()
 
             if not mov_estoque:
-                print(f'Não tem movimentação do produto com o ID {produto_id}')
-                return
-            else:
-                for mov in mov_estoque:
-                    print(f"ID: {mov.id}, Tipo: {mov._tipo}, Quantidade: {mov._quantidade}, Data: {mov.data}")
-        except ValueError:
-            print("ID do produto inválido. Insira um número inteiro.")
+                raise ValueError(f'Não tem movimentação do produto com o ID {produto_id}')
+            
+            for mov in mov_estoque:
+                print(f"ID: {mov.id}, Tipo: {mov._tipo}, Quantidade: {mov._quantidade}, Data: {mov.data}")
+        except Exception as e:
+            print(f"Erro: {e}")

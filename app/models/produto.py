@@ -12,8 +12,8 @@ class Produto(Base):
     _preco_compra = Column("preco_compra", Numeric(10,2), nullable=False)
     _preco_venda = Column("preco_venda", Numeric(10,2), nullable=False)
     
-    movimentacoes = relationship("MovimentacaoEstoque", back_populates="produto")
-    estoques = relationship("Estoque", back_populates="produto")
+    movimentacoes = relationship("MovimentacaoEstoque", back_populates="produto", cascade="all, delete")
+    estoques = relationship("Estoque", back_populates="produto", cascade="all, delete")
 
     def __repr__(self):
         return f"{self.nome} - ID: {self.id} || Código de barras: {self.codigo}, Preço Venda: {self.preco_venda}, Preço Compra: {self._preco_compra} ||"

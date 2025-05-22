@@ -1,9 +1,4 @@
-from models.produto import Produto
-from models.gerente import Gerente
-from models.vendedor import Vendedor
-from models.estoquista import Estoquista
-from models.movimentarEstoque import MovimentacaoEstoque
-from models.estoque import Estoque
+from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
 from utils.exceptions import (
     DuplicidadeDeCpf,
     DuplicidadeDeTelefone,
@@ -14,7 +9,8 @@ from utils.exceptions import (
     SalarioNegativo,
     ErroNaQuantidade,
     SemMovimentacaoError,
-    TipoUsuaioError
+    TipoUsuaioError,
+    NomeInvalido
 )
 import re
 
@@ -26,14 +22,19 @@ class EstoqueServices:
         self._bd = bd
         self._produtos = []
 
-    def adicionar_produto(self, produto):
-        if not isinstance(produto, Produto):
-            raise TypeError("Só pode adicionar objetos do tipo Produto")
-        if produto not in self._produtos:
-            self._produtos.append(produto)
-            EstoqueServices.total_produtos += 1
-        else:
-            print("Produto já está na lista!")
+    def produtos_bd(self):
+        produtos = self._bd.query(Produto).all()
+        if not produtos:
+            print('Não existem produtos cadastrados no momento.')
+            return
+
+        for produto in produtos:
+            if produto not in self._produtos:
+                self._produtos.append(produto)
+                EstoqueServices.total_produtos += 1
+            else:
+                print(f"Produto '{produto._nome}' já está na lista!")
+
 
     @property
     def produtos(self):
@@ -45,20 +46,20 @@ class EstoqueServices:
         
     @classmethod
     def listar_estoque_baixo(cls, bd):
-        produtos = bd.query(Produto).filter(Produto.quantidade <= cls.qtd_minima).all()
+        produtos = bd.query(Estoque).filter(Estoque._quantidade <= cls.qtd_minima).all()
 
         if not produtos:
-            print(f"Todos os produtos estão com estoque maiores que {cls.qtd_minima}!")
+            print(f"Todos os produtos estão com estoque maior que {cls.qtd_minima}!")
             return
 
         print("\nProdutos com estoque abaixo do mínimo:")
         for produto in produtos:
-            print(f"- {produto.nome} | Quantidade: {produto.quantidade} | Mínimo ideal: {cls.qtd_minima}")
+            print(f"- {produto.produto._nome} COD_B {produto.produto._codigo} | Quantidade: {produto.quantidade} | Mínimo ideal: {cls.qtd_minima}")
 
     
     def criar_estoque(self):
         try: 
-            produto_id = int(input("Insira o ID do produto que deseja adicionar: "))
+            produto_id = int(input("Insira o ID do produto que deseja adicionar: ").strip())
             id_produto_existente = self.bd.query(Produto).filter_by(id=produto_id).first()
 
             if id_produto_existente:
@@ -66,7 +67,7 @@ class EstoqueServices:
             else:
                 raise ProdutoNaoEncontrado(produto_id)
             
-            qtd_prod = int(input('Qual a quantidade atual do produto que deseja adicionar ao Estoque? '))
+            qtd_prod = int(input('Qual a quantidade atual do produto que deseja adicionar ao Estoque? ').strip())
             if qtd_prod < 0:
                 raise ErroNaQuantidade(qtd_prod)
 
@@ -81,13 +82,13 @@ class EstoqueServices:
         except (ProdutoNaoEncontrado, ErroNaQuantidade) as e:
             self._bd.rollback()
             print(e)
-        except ValueError:
-            print("Entrada inválida. Certifique-se de digitar números válidos.")
+        except Exception as e:
+            print(f"Erro: {e}")
 
     def listar_produtos_estoque(self):
-        produtos = self._bd.query(Produto).all()
+        produtos = self._bd.query(Estoque).all()
         if not produtos:
-            print("Nenhum produto cadastrado.")
+            print("Nenhum produto cadastrado no estoque.")
             return
         for produto in produtos:
             print(produto)
@@ -102,8 +103,8 @@ class EstoqueServices:
                 raise ProdutoNaoEncontrado(id_produto)
         except ProdutoNaoEncontrado as e:
             print(e)
-        except ValueError:
-            print("ID inválido. Digite um número inteiro.")
+        except Exception as e:
+            print(f"{e}")
 
     def atualizar_produto_estoque(self, id_produto):
         try:
@@ -120,13 +121,15 @@ class EstoqueServices:
             print('1. Nome.')
             print('2. Quantidade.')
             
-            opcao = input('Opção: ')
+            opcao = input('Opção: ').strip()
             if opcao == '1':
-                nome = input("Nome Novo: ")
+                nome = input("Nome Novo: ").strip()
+                if len(nome) < 3:
+                    raise NomeInvalido(nome)
                 id_produto_existente.produto._nome = nome
                 
             elif opcao == '2':
-                qtd = int(input("Nova quantidade, INSIRA A QUANTIDADE -TOTAL- NOVA: "))
+                qtd = int(input("Nova quantidade, INSIRA A QUANTIDADE -TOTAL- NOVA: ").strip())
                 if qtd < 0:
                     raise ErroNaQuantidade(qtd)
                 
@@ -138,15 +141,15 @@ class EstoqueServices:
             
             self._bd.commit()
             print(f"{id_produto_existente.produto._nome} atualizado com sucesso.")
-        except (ProdutoNaoEncontrado, ErroNaQuantidade) as e:
+        except (ProdutoNaoEncontrado, ErroNaQuantidade, NomeInvalido) as e:
             self._bd.rollback()
             print(e)
-        except ValueError:
-            print("Entrada inválida. Digite um número inteiro para a quantidade.")
+        except Exception as e:
+            print(f"Entrada inválida. {e}")
 
     def deletar_produto(self):
         try:
-            id_produto = int(input("Insira o ID do Produto que deseja DELETAR: "))
+            id_produto = int(input("Insira o ID do Produto que deseja DELETAR: ").strip())
             id_produto_existente = self._bd.query(Estoque).filter_by(_produto_id=id_produto).first()
                     
             if id_produto_existente:
@@ -160,5 +163,5 @@ class EstoqueServices:
         except ProdutoNaoEncontrado as e:
             self._bd.rollback()
             print(str(e))
-        except ValueError:
-            print("ID inválido. Digite um número inteiro.")
+        except Exception as e:
+            print(f"ID inválido. Digite um número inteiro. {e}")

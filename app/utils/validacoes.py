@@ -5,6 +5,14 @@ from .exceptions import (TelefoneInvalido, CpfInvalido, EmailInvalido)
 import re
 
 class Validacoes:
+    @staticmethod
+    def buscar_usuario_por_id(bd, tipo_usuario, id_user):
+        model = {
+            'GERENTE': Gerente,
+            'VENDEDOR': Vendedor,
+            'ESTOQUISTA': Estoquista
+        }[tipo_usuario]
+        return bd.query(model).filter_by(id=id_user).first()
     
     @staticmethod
     def cpf_ja_existe(bd, cpf):
@@ -45,7 +53,7 @@ class Validacoes:
     @staticmethod
     def validar_telefone(telefone):
         telefone_limpo = re.sub(r'\D', '', telefone)
-        if len(telefone_limpo) > 14:
+        if len(telefone_limpo) > 14 or len(telefone_limpo) < 13:
             raise TelefoneInvalido(telefone_limpo)
         return telefone_limpo
     

@@ -1,7 +1,4 @@
-from models.gerente import Gerente
-from models.produto import Produto
-from models.estoquista import Estoquista
-from models.vendedor import Vendedor
+from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
 from .pessoa_services import CRUDAbstrato
 from utils.validacoes import Validacoes
 from utils.exceptions import (
@@ -30,13 +27,13 @@ class GerenteService(CRUDAbstrato):
             print('Não existem produtos adicionados.')
             return
         
-        id_produto = int(input("Insira o ID do produto que deseja modificar o Preço de Venda: "))
+        id_produto = int(input("Insira o ID do produto que deseja modificar o Preço de Venda: ").strip())
         produto_existe = self._bd.query(Produto).filter_by(id=id_produto).first()
         if not produto_existe:
             raise ProdutoNaoEncontrado(id_produto)
 
         try:
-            novo_preco = float(input("Qual será o novo preço de venda? "))
+            novo_preco = float(input("Qual será o novo preço de venda? ").replace(",", "."))
             if novo_preco <= 0:
                 raise PrecoNegativo(novo_preco)
 
@@ -52,31 +49,32 @@ class GerenteService(CRUDAbstrato):
 
     def criar(self, cpf):
         try:
-            nome = input("Insira o nome: ")
-
+            nome = input("Insira o nome: ").strip()
+            if len(nome) < 3:
+                raise NomeInvalido(nome)
             cpf_limpo = Validacoes.validar_cpf(cpf)
             if Validacoes.cpf_ja_existe(self._bd, cpf):
                 raise CpfJaExistente(cpf_limpo)
 
-            email = input("Insira o E-mail: ")
+            email = input("Insira o E-mail: ").strip()
             email_limpo = Validacoes.validar_email(email)
             if Validacoes.email_ja_existe(self._bd, email):
                 raise EmailJaExisteException(email)
             
-            telefone = input("Insira o Telefone: ")
+            telefone = input("Insira o Telefone: ").strip()
             telefone_limpo = Validacoes.validar_telefone(telefone)
             if Validacoes.telefone_ja_existe(self._bd, telefone_limpo):
                 raise TelefoneJaExiste(telefone_limpo)
 
-            turno = input("Insira o Turno (M, T, N): ").upper()
+            turno = input("Insira o Turno (M, T, N): ").strip().upper()
             if turno not in ['M', 'T', 'N']:
                 raise TurnoInvalido(turno)
 
-            salario = float(input("Insira o Salário: "))
+            salario = float(input("Insira o Salário: ").strip().replace(",", "."))
             if Validacoes.salario_negativo(salario):
                 raise SalarioNegativo(salario)
 
-            setor = input("Qual o setor? ")
+            setor = input("Qual o setor? ").strip()
             
             gerente = Gerente(
                 _nome=nome,
@@ -92,12 +90,12 @@ class GerenteService(CRUDAbstrato):
             self._bd.commit()
 
             print(f"Gerente {nome} criado com sucesso.")
-        except (SalarioNegativo, CpfInvalido, EmailJaExisteException, CpfJaExistente, TelefoneJaExiste, SalarioNegativo, TelefoneInvalido, TurnoInvalido, EmailInvalido) as e:
+        except (SalarioNegativo, CpfInvalido, EmailJaExisteException, CpfJaExistente, TelefoneJaExiste, SalarioNegativo, TelefoneInvalido, TurnoInvalido, EmailInvalido, NomeInvalido) as e:
             print(e)
             self._bd.rollback()
             return
-        except (Exception, ValueError) as ve:
-            print("Erro de validação")
+        except Exception as e:
+            print(f"Erro de validação: {e}")
             self._bd.rollback()
             return
 
@@ -110,7 +108,7 @@ class GerenteService(CRUDAbstrato):
             print(gerente)
 
     def listar_gerente(self):
-        cpf = input("Insira o CPF (Somente números): ")
+        cpf = input("Insira o CPF (Somente números): ").strip()
         try:
             cpf_limpo = Validacoes.validar_cpf(cpf)
 
@@ -121,25 +119,30 @@ class GerenteService(CRUDAbstrato):
         except (GerenteNaoExiste, CpfInvalido) as g:
             print(g)
             return
+        except Exception as e:
+            print(f'Erro: {e}')
+            return
         
     def listar_funcionarios(self, id_gerente):
         estoquistas = self._bd.query(Estoquista).filter_by(gerente_id=id_gerente).all()
         vendedores = self._bd.query(Vendedor).filter_by(gerente_id=id_gerente).all()
         gerente = self._bd.query(Gerente).filter_by(id=id_gerente).first()
+        try: 
+            if not estoquistas and not vendedores:
+                raise ValueError(f"Não existem estoquistas e vendedores associados a(o) gerente {gerente._nome} no momento.")
 
-        if not estoquistas and not vendedores:
-            print(f"Não existem estoquistas e vendedores associados a(o) gerente {gerente._nome} no momento.")
+            if estoquistas:
+                print(f"\nEstoquistas do gerente {gerente._nome}:\n")
+                for estoquista in estoquistas:
+                    print(f"- {estoquista.id} - {estoquista._nome} | E-mail: {estoquista._email} | Telefone:  {estoquista._telefone}")
+
+            if vendedores:
+                print(f"\nVendedores do gerente {gerente._nome}:\n")
+                for vendedor in vendedores:
+                    print(f"- {vendedor.id} - {vendedor._nome} | E-mail: {vendedor._email} | Telefone:  {vendedor._telefone}")
+        except Exception as e:
+            print(f'Erro: {e}')
             return
-
-        if estoquistas:
-            print(f"\nEstoquistas do gerente {gerente._nome}:\n")
-            for estoquista in estoquistas:
-                print(f"- {estoquista._nome} | E-mail: {estoquista._email}")
-
-        if vendedores:
-            print(f"\nVendedores do gerente {gerente._nome}:\n")
-            for vendedor in vendedores:
-                print(f"- {vendedor._nome} | E-mail: {vendedor._email}")
         
     def listar_dados(self, cpf):
         cpf_limpo = Validacoes.validar_cpf(cpf)
@@ -152,6 +155,8 @@ class GerenteService(CRUDAbstrato):
         except GerenteNaoExiste as g:
             print(g)
             return
+        except Exception as e:
+            print(f'Erro: {e}')
         
     def atualizar(self, cpf):
         cpf_limpo = Validacoes.validar_cpf(cpf)
@@ -172,27 +177,27 @@ class GerenteService(CRUDAbstrato):
             opcao = input('Opção: ')
 
             if opcao == '1':
-                nome = input("Novo nome: ")
+                nome = input("Novo nome: ").strip()
                 if len(nome) < 3:
                     raise NomeInvalido(nome)
                 gerente._nome = nome
 
             elif opcao == '2':
-                email = input("Novo email: ")
+                email = input("Novo email: ").strip()
                 email_limpo = Validacoes.validar_email(email)
                 if Validacoes.email_ja_existe(self._bd, email_limpo):
                     raise EmailJaExisteException(email_limpo)
                 gerente._email = email_limpo
 
             elif opcao == '3':
-                telefone = input("Novo telefone: ")
+                telefone = input("Novo telefone: ").strip()
                 telefone_limpo = Validacoes.validar_telefone(telefone)
                 if Validacoes.telefone_ja_existe(self._bd, telefone_limpo):
                     raise TelefoneJaExiste(telefone_limpo)
                 gerente._telefone = telefone_limpo
 
             elif opcao == '4':
-                turno = input("Novo turno (M, T ou N): ").upper()
+                turno = input("Novo turno (M, T ou N): ").strip().upper()
                 if turno not in ['M', 'T', 'N']:
                     raise TurnoInvalido(turno)
                 gerente._turno = turno
@@ -213,20 +218,20 @@ class GerenteService(CRUDAbstrato):
             return
             
         except Exception as e:
-            print('Erro de validação - ')
+            print(f'Erro de validação - {e}')
             self._bd.rollback()
             return
 
     def deletar(self):
         try:
-            cpf = input("Insira o CPF do Gerente que deseja deletar (SOMENTE NÚMEROS): ")
+            cpf = input("Insira o CPF do Gerente que deseja deletar (SOMENTE NÚMEROS): ").strip()
             cpf_limpo = Validacoes.validar_cpf(cpf)
 
             gerente = self._bd.query(Gerente).filter_by(_cpf=cpf_limpo).first()
             if not gerente:
                 raise GerenteNaoExiste("O gerente não existe.")
             
-            confirmacao = input(f"Tem certeza que deseja deletar o gerente: {gerente._nome}? (S/N): ")
+            confirmacao = input(f"Tem certeza que deseja deletar o gerente: {gerente._nome}? (S/N): ").strip()
 
             if confirmacao.upper() != 'S':
                 print("Operação cancelada pelo usuário.")
@@ -238,5 +243,9 @@ class GerenteService(CRUDAbstrato):
         except (GerenteNaoExiste, CpfInvalido) as e:
             self._bd.rollback()
             print(e)
+            return
+        except Exception as e:
+            print(f'Erro: {e}')
+            self._bd.rollback()
             return
             
