@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 class CRUDAbstrato(ABC):
+
     @abstractmethod
     def criar(self, cod_identificacao):
         pass

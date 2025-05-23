@@ -217,11 +217,10 @@ class VendedorService(CRUDAbstrato):
 
             self._bd.commit()
             print("Atualização realizada com sucesso.")
-        except (VendedorNaoExiste, EmailJaExisteException, TelefoneJaExiste, TurnoInvalido,NomeInvalido) as e:
+        except (VendedorNaoExiste, EmailJaExisteException, TelefoneJaExiste, TurnoInvalido, NomeInvalido, CpfInvalido) as e:
             self._bd.rollback()
             print(e)
             return
-            
         except Exception as ex:
             self._bd.rollback()
             print('Erro de validação - ')

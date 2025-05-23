@@ -22,17 +22,18 @@ class GerenteService(CRUDAbstrato):
         self._bd = bd
         
     def alterar_precos(self):
-        produtos = self._bd.query(Produto).all()
-        if not produtos:
-            print('Não existem produtos adicionados.')
-            return
-        
-        id_produto = int(input("Insira o ID do produto que deseja modificar o Preço de Venda: ").strip())
-        produto_existe = self._bd.query(Produto).filter_by(id=id_produto).first()
-        if not produto_existe:
-            raise ProdutoNaoEncontrado(id_produto)
-
         try:
+            produtos = self._bd.query(Produto).all()
+            if not produtos:
+                raise ValueError('Não existem produtos adicionados.')
+            for produto in produtos:
+                print(produto)
+                
+            id_produto = int(input("Insira o ID do produto que deseja modificar o Preço de Venda: ").strip())
+            produto_existe = self._bd.query(Produto).filter_by(id=id_produto).first()
+            if not produto_existe:
+                raise ProdutoNaoEncontrado(id_produto)
+            
             novo_preco = float(input("Qual será o novo preço de venda? ").replace(",", "."))
             if novo_preco <= 0:
                 raise PrecoNegativo(novo_preco)
@@ -40,12 +41,13 @@ class GerenteService(CRUDAbstrato):
             produto_existe._preco_venda = novo_preco
             self._bd.commit()
             print(f"Preço do produto {produto_existe.nome} alterado para R$ {novo_preco:.2f}")
-        except PrecoNegativo as e:
+        except (PrecoNegativo, ProdutoNaoEncontrado) as e:
             self._bd.rollback()
             print(e)
-        except ValueError:
+        except Exception as e:
+            print(f'Erro: {e}')
             self._bd.rollback()
-            print("Valor inválido. Digite um número válido para o preço.")
+            
 
     def criar(self, cpf):
         try:

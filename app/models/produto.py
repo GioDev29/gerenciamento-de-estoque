@@ -19,10 +19,10 @@ class Produto(Base):
         return f"{self.nome} - ID: {self.id} || Código de barras: {self.codigo}, Preço Venda: {self.preco_venda}, Preço Compra: {self._preco_compra} ||"
 
     @property
-    def nome(self):
+    def _nome(self):
         return self._nome
 
-    @nome.setter
+    @_nome.setter
     def nome(self, valor):
         if not valor or not valor.strip():
             raise ValueError("Nome do produto não pode ser vazio.")
@@ -30,13 +30,13 @@ class Produto(Base):
 
     @property
     def codigo(self):
-        return self._codigo
+        return self.__codigo
 
     @codigo.setter
     def codigo(self, valor):
         if not isinstance(valor, int) or valor <= 0:
             raise ValueError("Código deve ser um número inteiro positivo.")
-        self._codigo = valor
+        self.__codigo = valor
 
     @property
     def preco_compra(self):
@@ -57,3 +57,4 @@ class Produto(Base):
         if valor < 0:
             raise ValueError("Preço de venda não pode ser negativo.")
         self._preco_venda = valor
+
