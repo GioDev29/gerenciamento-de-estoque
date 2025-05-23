@@ -16,6 +16,13 @@ class MovimentacaoEstoque(Base):
 
     produto = relationship("Produto", back_populates="movimentacoes")
 
+    def __repr__(self):
+        return (
+            f'Quem Modificou: {self.tipo_user} ID: {self._id_user}'
+            f"|| ID: {self.id} || TIPO: {self._tipo}, PRODUTO: {self.produto._nome} {self.produto_id} ||"
+            f"|| QUANTIDADE: {self._quantidade} || DATA: {self.data} ||"
+        )
+    
     @property
     def tipo(self):
         return self._tipo

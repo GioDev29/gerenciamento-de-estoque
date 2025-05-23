@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class CRUDAbstrato(ABC):
     @abstractmethod
-    def criar(self, id_gerente):
+    def criar(self, cod_identificacao):
         pass
 
     @abstractmethod
@@ -10,9 +10,11 @@ class CRUDAbstrato(ABC):
         pass
 
     @abstractmethod
-    def atualizar(self, cpf):
+    def atualizar(self, cod_identificacao):
         pass
 
     @abstractmethod
     def deletar(self):
         pass
+    
+    

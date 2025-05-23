@@ -1,7 +1,7 @@
 from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
 from .gerente_services import GerenteService
 from utils.validacoes import Validacoes
-from .pessoa_services import CRUDAbstrato
+from .crud_services import CRUDAbstrato
 from utils.exceptions import (
     EmailJaExisteException,
     CpfJaExistente,
@@ -127,7 +127,10 @@ class EstoquistaService(CRUDAbstrato):
             estoquista = self._bd.query(Estoquista).filter_by(_cpf=cpf_limpo).first()
             if not estoquista:
                 raise EstoquistaNaoExiste(f'Estoquista com CPF "{cpf}" não encontrado.')
-            print(estoquista)
+            print(f'Vendedor - {estoquista._nome.upper()} - ID {estoquista.id}')
+            print(f'CPF - {estoquista._cpf} - E-MAIL - {estoquista._email}')
+            print(f'TELEFONE - {estoquista._telefone} - DATA ENTRADA - {estoquista.data_criacao}')
+            print(f'TURNO - {estoquista._turno} - SETOR - {estoquista.gerente._setor}\n')
         except (EstoquistaNaoExiste, CpfInvalido) as e:
             print(e)
             self._bd.rollback()

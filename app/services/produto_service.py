@@ -1,4 +1,5 @@
 from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
+from .crud_services import CRUDAbstrato
 from utils.exceptions import (
     GerenteNaoExiste,
     EmailJaExisteException,
@@ -17,7 +18,7 @@ from utils.exceptions import (
 from sqlalchemy import func, extract
 from models import Produto, MovimentacaoEstoque
 
-class ProdutoService:
+class ProdutoService(CRUDAbstrato):
     def __init__(self, bd):
         self._bd = bd
         self.produto_mais_vendido = None  
@@ -62,7 +63,7 @@ class ProdutoService:
             print(f"Erro ao buscar produto mais vendido: {e}")
             return 
 
-    def criar_produto(self):
+    def criar(self, codigo):
         try:
             nome = input("Insira o nome do produto: ").strip()
             if len(nome) < 3:
@@ -70,10 +71,6 @@ class ProdutoService:
             descricao = input("Insira a descrição do produto: ").strip()
             if len(descricao) < 3:
                 raise TextoInvalido(descricao)
-            codigo = int(input("Insira o código do produto: "))
-            codigo_existe = self._bd.query(Produto).filter_by(_codigo=codigo).first()
-            if codigo_existe:
-                raise ProdutoJaExiste(codigo)
             preco_compra = float(input("Insira o preço de compra do produto: ").strip().replace(",", "."))
             if preco_compra <= 0:
                 raise ValorInvalido(preco_compra)
@@ -114,13 +111,13 @@ class ProdutoService:
             return
 
 
-    def deletar_produto(self, codigo_barras):
+    def deletar(self, codigo_barras):
         try:
             produto = self._bd.query(Produto).filter_by(_codigo=codigo_barras).first()
             if not produto:
                 raise ProdutoNaoExiste(codigo_barras) 
 
-            confirmacao = input(f"Tem certeza que deseja deletar o gerente: {produto._nome}? (S/N): ").strip()
+            confirmacao = input(f"Tem certeza que deseja deletar o produto: {produto._nome}? (S/N): ").strip()
 
             if confirmacao.upper() != 'S':
                 print("Operação cancelada pelo usuário.")
@@ -138,7 +135,7 @@ class ProdutoService:
             print(f"Erro ao deletar produto: {e}")
             return
 
-    def listar_produtos(self):
+    def listar_tudo(self):
         produtos = self._bd.query(Produto).all()
         if not produtos:
             print("Nenhum produto cadastrado.")
@@ -162,7 +159,7 @@ class ProdutoService:
             self._bd.rollback()
             return
 
-    def modificar_produto(self, produto_id):
+    def atualizar(self, produto_id):
         try:
             produto = self._bd.query(Produto).filter_by(id=produto_id).first()
             if not produto:

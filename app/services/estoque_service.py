@@ -57,9 +57,8 @@ class EstoqueServices:
             print(f"- {produto.produto._nome} COD_B {produto.produto._codigo} | Quantidade: {produto.quantidade} | Mínimo ideal: {cls.qtd_minima}")
 
     
-    def criar_estoque(self):
+    def criar_estoque(self, produto_id):
         try: 
-            produto_id = int(input("Insira o ID do produto que deseja adicionar: ").strip())
             id_produto_existente = self.bd.query(Produto).filter_by(id=produto_id).first()
 
             if id_produto_existente:

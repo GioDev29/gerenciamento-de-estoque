@@ -1,5 +1,5 @@
 from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
-from .pessoa_services import CRUDAbstrato
+from .crud_services import CRUDAbstrato
 from utils.validacoes import Validacoes
 from utils.exceptions import (
     EmailJaExisteException,
@@ -145,24 +145,27 @@ class GerenteService(CRUDAbstrato):
             return
         
     def listar_dados(self, cpf):
-        cpf_limpo = Validacoes.validar_cpf(cpf)
-
         try:
+            cpf_limpo = Validacoes.validar_cpf(cpf)
             gerente = self._bd.query(Gerente).filter_by(_cpf=cpf_limpo).first()
             if not gerente:
                 raise GerenteNaoExiste(f'Gerente com CPF {cpf_limpo} não encontrado.')
-            print(gerente)
-        except GerenteNaoExiste as g:
+            print(f'GERENTE - {gerente._nome.upper()} - ID {gerente.id}')
+            print(f'CPF - {gerente._cpf} - E-MAIL - {gerente._email}')
+            print(f'TELEFONE - {gerente._telefone} - DATA ENTRADA - {gerente.data_criacao}')
+            print(f'TURNO - {gerente._turno} - SETOR - {gerente._setor}\n')
+            
+            
+        except (GerenteNaoExiste, CpfInvalido) as g:
             print(g)
             return
         except Exception as e:
             print(f'Erro: {e}')
         
     def atualizar(self, cpf):
-        cpf_limpo = Validacoes.validar_cpf(cpf)
-        gerente = self._bd.query(Gerente).filter_by(_cpf=cpf_limpo).first()
-        
         try:
+            cpf_limpo = Validacoes.validar_cpf(cpf)
+            gerente = self._bd.query(Gerente).filter_by(_cpf=cpf_limpo).first()
             if not gerente:
                 raise GerenteNaoExiste(f'Gerente com CPF {cpf_limpo} não encontrado.')
 

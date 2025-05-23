@@ -3,11 +3,9 @@ from services import gerente_services, vendedor_service, estoquista_service
 from services.estoque_service import EstoqueServices  
 from services.movimentar_estoque_services import MovimentarEstoque 
 from services.produto_service import ProdutoService 
-from models.gerente import Gerente
-from models.vendedor import Vendedor
-from models.estoquista import Estoquista
+from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
 from utils.validacoes import Validacoes
-from utils.exceptions import (CpfInvalido, CpfJaExistente, EstoquistaNaoExiste, VendedorNaoExiste, GerenteNaoExiste)
+from utils.exceptions import (CpfInvalido, ProdutoNaoExiste, ProdutoJaExiste, CpfJaExistente, EstoquistaNaoExiste, VendedorNaoExiste, GerenteNaoExiste)
 import os
 
 def limpar_tela():
@@ -84,6 +82,7 @@ def menu_gerente_produtos(bd, gerente):
         print('5. Listar produtos com estoque baixo')
         print('6. Alterar preço de venda do produto')
         print('7. Produto mais vendido')
+        print('8. Deletar Produto')
         print('0. Voltar\n')
         
         opcao = input('\nEscolha: ')
@@ -113,6 +112,20 @@ def menu_gerente_produtos(bd, gerente):
         elif opcao == '7':
             produto_s = ProdutoService(bd)
             produto_s.produto_mais_vendido_mes()
+        elif opcao == '8':
+            try: 
+                produto_s = ProdutoService(bd)
+                codigo = int(input("Insira o código de barras do produto: ").strip())
+                codigo_existe = bd.query(Produto).filter_by(_codigo=codigo).first()
+                if not codigo_existe:
+                    raise ProdutoNaoExiste(codigo)
+                produto_s.deletar(codigo)
+            except (ProdutoJaExiste) as e:
+                print(e)
+                return
+            except Exception as e:
+                print('Erro: {e}')
+                return
         elif opcao == '0':
             return
         
@@ -133,7 +146,18 @@ def menu_gerente_estoque(bd, gerente):
             estoque_s.listar_produtos_estoque()
         elif opcao == '2':
             mov_s = MovimentarEstoque(bd)
-            mov_s.criar_mov_estoque()
+            try:
+                produto_id = int(input("Insira o ID do produto: ").strip())
+                produto = bd.query(Produto).filter_by(id=produto_id).first()
+                if not produto:
+                    raise ProdutoNaoExiste(produto_id)
+                mov_s.criar(produto_id)
+            except ProdutoNaoExiste as e:
+                print(e)
+                return
+            except Exception as e:
+                print(e)
+                return
         elif opcao == '3':
             mov_s = MovimentarEstoque(bd)
             mov_s.listar_movs_estoque()
@@ -191,7 +215,18 @@ def menu_estoquista_estoque(bd, gerente):
             estoque_s.listar_produtos_estoque()
         elif opcao == '2':
             mov_s = MovimentarEstoque(bd)
-            mov_s.criar_mov_estoque()
+            try:
+                produto_id = int(input("Insira o ID do produto: ").strip())
+                produto = bd.query(Produto).filter_by(id=produto_id).first()
+                if not produto:
+                    raise ProdutoNaoExiste(produto_id)
+                mov_s.criar(produto_id)
+            except ProdutoNaoExiste as e:
+                print(e)
+                return
+            except Exception as e:
+                print(e)
+                return
         elif opcao == '3':
             mov_s = MovimentarEstoque(bd)
             mov_s.listar_movs_estoque()
@@ -218,8 +253,19 @@ def menu_estoquista_produto(bd, gerente):
         
         opcao = input('\nEscolha: ')
         if opcao == '1':
-            produto_s = ProdutoService(bd)
-            produto_s.criar_produto()
+            try: 
+                produto_s = ProdutoService(bd)
+                codigo = int(input("Insira o código de barras do produto: ").strip())
+                codigo_existe = bd.query(Produto).filter_by(_codigo=codigo).first()
+                if codigo_existe:
+                    raise ProdutoJaExiste(codigo)
+                produto_s.criar()
+            except (ProdutoJaExiste) as e:
+                print(e)
+                return
+            except Exception as e:
+                print('Erro: {e}')
+                return
 
         elif opcao == '2':
             try:
@@ -370,7 +416,18 @@ def menu_vendedor_estoque(bd, vendedor):
             estoque_s.listar_produtos_estoque()
         elif opcao == '2':
             mov_s = MovimentarEstoque(bd)
-            mov_s.criar_mov_estoque()
+            try:
+                produto_id = int(input("Insira o ID do produto: ").strip())
+                produto = bd.query(Produto).filter_by(id=produto_id).first()
+                if not produto:
+                    raise ProdutoNaoExiste(produto_id)
+                mov_s.criar(produto_id)
+            except ProdutoNaoExiste as e:
+                print(e)
+                return
+            except Exception as e:
+                print(e)
+                return
         elif opcao == '3':
             mov_s = MovimentarEstoque(bd)
             mov_s.listar_movs_estoque()

@@ -1,7 +1,7 @@
 import re
 from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
 from .gerente_services import GerenteService
-from .pessoa_services import CRUDAbstrato
+from .crud_services import CRUDAbstrato
 from utils.validacoes import Validacoes
 from utils.exceptions import (
     GerenteNaoExiste,
@@ -150,13 +150,22 @@ class VendedorService(CRUDAbstrato):
             return
     
     def listar_dados(self, cpf):
-        cpf_limpo = Validacoes.validar_cpf(cpf)
-        vendedor = self._bd.query(Vendedor).filter_by(_cpf=cpf_limpo).first()
-        if not vendedor:
-            print(f'Vendedor com CPF "{cpf_limpo}" não foi encontrado.')
+        try:
+            cpf_limpo = Validacoes.validar_cpf(cpf)
+            vendedor = self._bd.query(Vendedor).filter_by(_cpf=cpf_limpo).first()
+            if not vendedor:
+                raise VendedorNaoExiste(f'Vend com CPF {cpf_limpo} não encontrado.')
+            print(f'Vendedor - {vendedor._nome.upper()} - ID {vendedor.id}')
+            print(f'CPF - {vendedor._cpf} - E-MAIL - {vendedor._email}')
+            print(f'TELEFONE - {vendedor._telefone} - DATA ENTRADA - {vendedor.data_criacao}')
+            print(f'TURNO - {vendedor._turno} - SETOR - {vendedor.gerente._setor}\n')
+            
+            
+        except (VendedorNaoExiste, CpfInvalido) as g:
+            print(g)
             return
-        else:
-            print(vendedor)
+        except Exception as e:
+            print(f'Erro: {e}')
 
     def atualizar(self, cpf):
         try: 
