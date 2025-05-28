@@ -56,6 +56,9 @@ app/
 - Listar produtos com estoque baixo
 - Listar equipe de funcionários de gerente
 
+---
+
+INTEGRANTES: Sâmea Silva, Rodrigo Tomya e Giovanni Rodrigues
 
 ---
 
