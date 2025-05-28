@@ -51,6 +51,11 @@ app/
 - **CRUD** de Movimentações de Estoque
 - Visualizar movimentações específicas
 - Atualização dinâmica de estoque (entrada e saída de produtos)
+- Produto mais vendido determinado pelo mês e ano
+- Quantidade de produtos disponíveis
+- Listar produtos com estoque baixo
+- Listar equipe de funcionários de gerente
+
 
 ---
 
