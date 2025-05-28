@@ -38,7 +38,7 @@ class SemMovimentacaoError(Exception):
         self.tipo = tipo
         super().__init__(f"Tipo de movimentação inválido: '{self.tipo}'.")
 
-class TipoUsuaioError(Exception):
+class TipoUsuarioError(Exception):
     def __init__(self, tipo_usuario):
         self.tipo_usuario = tipo_usuario
         super().__init__(f"Tipo de usuário inválido: '{self.tipo_usuario}'.")

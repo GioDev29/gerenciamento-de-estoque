@@ -39,7 +39,7 @@ class VendedorService(CRUDAbstrato):
 
             cpf = input("Insira o CPF (SOMENTE NÚMEROS): ").strip()
             cpf_limpo = Validacoes.validar_cpf(cpf)
-            if Validacoes.cpf_ja_existe(self._bd, cpf):
+            if Validacoes.cpf_ja_existe(self._bd, cpf_limpo):
                 raise CpfJaExistente(cpf_limpo)
             
             email = input("Insira o E-mail: ").strip()
@@ -79,6 +79,10 @@ class VendedorService(CRUDAbstrato):
             print(e)
             self._bd.rollback()
             return
+        except ValueError as e:
+            print("Valor do salário inválido")
+            self._bd.rollback()
+            return
         except Exception as ex:
             print(f'Erro: {ex}')
             self._bd.rollback()
@@ -91,7 +95,7 @@ class VendedorService(CRUDAbstrato):
             vendedor = self._bd.query(Vendedor).filter_by(_cpf=cpf_limpo).first()
 
             if not vendedor:
-                raise VendedorNaoExiste(vendedor)
+                raise VendedorNaoExiste(cpf_limpo)
 
             confirmacao = input(f"Tem certeza que deseja deletar o vendedor {vendedor._nome}? (S/N): ").strip()
 
@@ -154,7 +158,7 @@ class VendedorService(CRUDAbstrato):
             cpf_limpo = Validacoes.validar_cpf(cpf)
             vendedor = self._bd.query(Vendedor).filter_by(_cpf=cpf_limpo).first()
             if not vendedor:
-                raise VendedorNaoExiste(f'Vend com CPF {cpf_limpo} não encontrado.')
+                raise VendedorNaoExiste(cpf_limpo)
             print(f'Vendedor - {vendedor._nome.upper()} - ID {vendedor.id}')
             print(f'CPF - {vendedor._cpf} - E-MAIL - {vendedor._email}')
             print(f'TELEFONE - {vendedor._telefone} - DATA ENTRADA - {vendedor.data_criacao}')

@@ -38,7 +38,7 @@ class EstoquistaService(CRUDAbstrato):
             
             cpf = input("Insira o cpf (SOMENTE NÚMEROS): ").strip()
             cpf_limpo = Validacoes.validar_cpf(cpf)
-            if Validacoes.cpf_ja_existe(self._bd, cpf):
+            if Validacoes.cpf_ja_existe(self._bd, cpf_limpo):
                 raise CpfJaExistente(cpf_limpo)
             
             email = input("Insira o E-mail: ").strip()
@@ -127,7 +127,7 @@ class EstoquistaService(CRUDAbstrato):
             estoquista = self._bd.query(Estoquista).filter_by(_cpf=cpf_limpo).first()
             if not estoquista:
                 raise EstoquistaNaoExiste(f'Estoquista com CPF "{cpf}" não encontrado.')
-            print(f'Vendedor - {estoquista._nome.upper()} - ID {estoquista.id}')
+            print(f'Estoquista - {estoquista._nome.upper()} - ID {estoquista.id}')
             print(f'CPF - {estoquista._cpf} - E-MAIL - {estoquista._email}')
             print(f'TELEFONE - {estoquista._telefone} - DATA ENTRADA - {estoquista.data_criacao}')
             print(f'TURNO - {estoquista._turno} - SETOR - {estoquista.gerente._setor}\n')
@@ -161,19 +161,19 @@ class EstoquistaService(CRUDAbstrato):
                 nome = input("Novo nome: ").strip()
                 if len(nome) < 3:
                     raise NomeInvalido(nome)
-                estoquista.nome = nome
+                estoquista._nome = nome
                 
             elif opcao == '2':
                 email = input("Novo email: ").strip()
                 email_limpo = Validacoes.validar_email(email)
-                if Validacoes.email_ja_existe(self._bd, email_limpo):
+                if email_limpo != estoquista._email and Validacoes.email_ja_existe(self._bd, email_limpo):
                     raise EmailJaExisteException(email_limpo)
                 estoquista._email = email_limpo
                 
             elif opcao == '3':
                 telefone = input("Novo telefone: ").strip()
                 telefone_limpo = Validacoes.validar_telefone(telefone)
-                if Validacoes.telefone_ja_existe(self._bd, telefone_limpo):
+                if telefone_limpo != estoquista._telefone and Validacoes.telefone_ja_existe(self._bd, telefone_limpo):
                     raise TelefoneJaExiste(telefone_limpo)
                 estoquista._telefone = telefone_limpo
                 

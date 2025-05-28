@@ -9,7 +9,7 @@ from utils.exceptions import (
     SalarioNegativo,
     ErroNaQuantidade,
     SemMovimentacaoError,
-    TipoUsuaioError,
+    TipoUsuarioError,
     NomeInvalido
 )
 import re
@@ -54,12 +54,12 @@ class EstoqueServices:
 
         print("\nProdutos com estoque abaixo do mínimo:")
         for produto in produtos:
-            print(f"- {produto.produto._nome} COD_B {produto.produto._codigo} | Quantidade: {produto.quantidade} | Mínimo ideal: {cls.qtd_minima}")
+            print(f"- {produto.produto._nome} COD_B {produto.produto._codigo} | Quantidade: {produto._quantidade} | Mínimo ideal: {cls.qtd_minima}")
 
     
     def criar_estoque(self, produto_id):
         try: 
-            id_produto_existente = self.bd.query(Produto).filter_by(id=produto_id).first()
+            id_produto_existente = self._bd.query(Produto).filter_by(id=produto_id).first()
 
             if id_produto_existente:
                 print(f"Encontramos o produto: {id_produto_existente._nome} com o ID: {produto_id}, ele será adicionado ao ESTOQUE.")
@@ -110,7 +110,7 @@ class EstoqueServices:
             id_produto_existente = self._bd.query(Estoque).filter_by(_produto_id=id_produto).first()
                 
             if id_produto_existente:
-                print(f"Encontramos o produto: {id_produto_existente.produto.nome} com o ID: {id_produto}.")
+                print(f"Encontramos o produto: {id_produto_existente.produto._nome} com o ID: {id_produto}.")
             else:
                 raise ProdutoNaoEncontrado(id_produto)
             
@@ -162,5 +162,8 @@ class EstoqueServices:
         except ProdutoNaoEncontrado as e:
             self._bd.rollback()
             print(str(e))
+        except ValueError:
+            print("ID deve ser um número inteiro")
+            return
         except Exception as e:
             print(f"ID inválido. Digite um número inteiro. {e}")

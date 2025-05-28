@@ -16,7 +16,6 @@ from utils.exceptions import (
 )
 
 from sqlalchemy import func, extract
-from models import Produto, MovimentacaoEstoque
 
 class ProdutoService(CRUDAbstrato):
     def __init__(self, bd):
@@ -75,8 +74,8 @@ class ProdutoService(CRUDAbstrato):
             if preco_compra <= 0:
                 raise ValorInvalido(preco_compra)
             preco_venda = float(input("Insira o preço de venda do produto: ").strip().replace(",", "."))
-            if preco_compra <= 0:
-                raise ValorInvalido(preco_compra)
+            if preco_venda <= 0:
+                raise ValorInvalido(preco_venda)
 
             produto = Produto( 
                 _nome=nome,
@@ -97,7 +96,6 @@ class ProdutoService(CRUDAbstrato):
                 _quantidade=qtd_inicial
             )
             self._bd.add(estoque)
-            print("ESTOQUE")
             self._bd.commit()
             print("Produto e estoque criados com sucesso!")
             return produto
@@ -148,7 +146,7 @@ class ProdutoService(CRUDAbstrato):
             codigo = int(input("Digite o codigo de barras do produto que deseja ver: ").strip())
             produto = self._bd.query(Produto).filter_by(_codigo=codigo).first()
             if not produto:
-                raise ProdutoNaoExiste(id)
+                raise ProdutoNaoExiste(codigo)
             print(produto)
         except ProdutoNaoExiste as p:
             print(p)
@@ -180,7 +178,7 @@ class ProdutoService(CRUDAbstrato):
                 nome = input("Novo nome: ").strip()
                 if len(nome) < 3:
                     raise NomeInvalido(nome)
-                produto.nome = nome
+                produto._nome = nome
 
             elif opcao == '2':
                 descricao = input("Nova descrição: ").strip()
@@ -189,7 +187,7 @@ class ProdutoService(CRUDAbstrato):
                 produto.descricao = descricao
             elif opcao == '3':
                 codigo = int(input("Novo código: ").strip())
-                produto.codigo = codigo 
+                produto._codigo = codigo 
 
             elif opcao == '4':
                 preco_compra = float(input("Novo preço de compra: ").strip())

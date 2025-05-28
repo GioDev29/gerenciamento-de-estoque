@@ -64,6 +64,3 @@ class MovimentacaoEstoque(Base):
             raise ValueError("A quantidade deve ser um inteiro maior que zero.")
         self._quantidade = valor
 
-    def __repr__(self):
-        return (f"<MovimentacaoEstoque(tipo={self.tipo}, produto_id={self.produto_id}, "
-                f"tipo_user={self.tipo_user}, id_user={self.id_user}, quantidade={self.quantidade})>")

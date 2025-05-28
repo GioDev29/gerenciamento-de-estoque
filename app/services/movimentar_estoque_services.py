@@ -11,7 +11,7 @@ from utils.exceptions import (
     SalarioNegativo,
     ErroNaQuantidade,
     SemMovimentacaoError,
-    TipoUsuaioError
+    TipoUsuarioError
 )
 
 class MovimentarEstoque(CRUDAbstrato):
@@ -27,7 +27,7 @@ class MovimentarEstoque(CRUDAbstrato):
             
             tipo_user = input("Insira o tipo de usuario (GERENTE, VENDEDOR OU ESTOQUISTA): ").strip().upper()
             if tipo_user not in ['GERENTE', 'VENDEDOR', 'ESTOQUISTA']:
-                raise TipoUsuaioError(tipo_user)
+                raise TipoUsuarioError(tipo_user)
             
             id_user = int(input("Insira o seu ID: ").strip())
             if not Validacoes.buscar_usuario_por_id(self._bd, tipo_user, id_user):
@@ -63,7 +63,7 @@ class MovimentarEstoque(CRUDAbstrato):
             self._bd.commit()
             print("Movimentação registrada com sucesso!")
 
-        except (ProdutoNaoEncontrado, SemMovimentacaoError, TipoUsuaioError, UsuarioNaoEncontrado, ErroNaQuantidade) as e:
+        except (ProdutoNaoEncontrado, SemMovimentacaoError, TipoUsuarioError, UsuarioNaoEncontrado, ErroNaQuantidade) as e:
             self._bd.rollback()
             print(e)
         except Exception as e:
@@ -113,36 +113,106 @@ class MovimentarEstoque(CRUDAbstrato):
                 print(mov)
         except Exception as e:
             print(f"Erro: {e}")
-
-
-    ## CONTINUAR
-    def deletar(self, id_produto):
-        try:
-            mov_estoque = self._bd.query(MovimentacaoEstoque).filter_by(produto_id=id_produto).all()
-
-            if not mov_estoque:
-                raise ValueError(f'Não tem movimentação do produto com o ID {id_produto}')
             
-            for mov in mov_estoque:
-                print(mov)
+    def atualizar(self, movimentacao_id):
+        try:
+            movimentacao = self._bd.query(MovimentacaoEstoque).filter_by(id=movimentacao_id).first()
+
+            if not movimentacao:
+                print(f"Nenhuma movimentação com ID {movimentacao_id} foi encontrada.")
+                return
+
+            estoque = self._bd.query(Estoque).filter_by(produto_id=movimentacao.produto_id).first()
+            if not estoque:
+                print("Estoque relacionado não encontrado.")
+                return
+
+            print('O que deseja atualizar?')
+            print('------------------------')
+            print('1. Quantidade')
+            print('2. Nenhuma das opções')
+
+            opcao = input('Opção: ')
+
+            if opcao == '1':
+                nova_qtd = int(input("Nova quantidade: ").strip())
+                if nova_qtd <= 0:
+                    raise ValueError("A quantidade deve ser positiva.")
                 
-            id_mov = int(input('Qual o ID da movimentação que deseja deletar? ').strip())
-            mov_estoque = self._bd.query(MovimentacaoEstoque).filter_by(id=id_mov).first()
-            print(mov)
+                diferenca = nova_qtd - movimentacao._quantidade
+                if movimentacao._tipo == 'ENTRADA':
+                    if estoque._quantidade + diferenca < 0:
+                        raise ValueError("Não é possível aplicar essa alteração. Estoque ficaria negativo.")
+                    estoque._quantidade += diferenca
+                elif movimentacao._tipo == 'SAIDA':
+                    if estoque._quantidade - diferenca < 0:
+                        raise ValueError("Não é possível aplicar essa alteração. Estoque ficaria negativo.")
+                    estoque._quantidade -= diferenca
 
-            confirmacao = input(f"Tem certeza que deseja deletar a movimentação do ID {id_mov}? Se voce deleta-la, a quantidade de SAIDA ou ENTRADA será anulada. (S/N): ").strip()
+                movimentacao._quantidade = nova_qtd
 
-            if confirmacao.upper() != 'S':
-                print("Operação cancelada pelo usuário.")
+            elif opcao == '2':
+                print("Nenhuma alteração realizada.")
                 return
             
-            if id_mov._tipo == 'Entrada':
-                estoque = self._bd.query(Estoque).filter_by
-            
-            self._bd.delete(mov_estoque)
+            else:
+                print("Opção inválida.")
+                return
+
             self._bd.commit()
-            print(f"A movimentação com o ID {id_mov} foi deletada e a quantidade movimentada voltou ao {id_mov.produto_id}!")
+            print("Movimentação atualizada com sucesso.")
+
+        except ValueError as e:
+            self._bd.rollback()
+            print(f"Erro ao atualizar movimentação: {e}")
         except Exception as e:
             self._bd.rollback()
-            print(f"Erro ao deletar produto: {e}")
-            return
+            print(f"Erro ao atualizar movimentação: {e}")
+
+
+
+
+    def deletar(self, id_produto):
+        try:
+            movimentacoes = self._bd.query(MovimentacaoEstoque).filter_by(produto_id=id_produto).all()
+
+            if not movimentacoes:
+                raise ValueError(f'Não há movimentações para o produto com ID {id_produto}.')
+
+            print("\nMovimentações encontradas:")
+            for mov in movimentacoes:
+                print(f"ID: {mov.id}, Tipo: {mov._tipo}, Quantidade: {mov._quantidade}, Data: {mov._data}")
+
+            id_mov = int(input('\nDigite o ID da movimentação que deseja deletar: ').strip())
+            mov_escolhida = self._bd.query(MovimentacaoEstoque).filter_by(id=id_mov).first()
+
+            if not mov_escolhida:
+                print(f"Nenhuma movimentação com ID {id_mov} foi encontrada.")
+                return
+
+            confirmacao = input(
+                f"Tem certeza que deseja deletar a movimentação ID {id_mov}? Isso vai ANULAR a entrada/saída que você fez no sistema. (S/N): ").strip().upper()
+
+            if confirmacao != 'S':
+                print("Operação cancelada pelo usuário.")
+                return
+
+            estoque = self._bd.query(Estoque).filter_by(_produto_id=mov_escolhida.produto_id).first()
+            if not estoque:
+                print("Erro: Estoque não encontrado.")
+                return
+
+            if mov_escolhida._tipo == 'ENTRADA':
+                if estoque._quantidade < mov_escolhida._quantidade:
+                    raise ValueError("Não é possível deletar essa movimentação de entrada, pois isso deixaria o estoque negativo.")
+                estoque._quantidade -= mov_escolhida._quantidade
+            elif mov_escolhida._tipo == 'SAIDA':
+                estoque._quantidade += mov_escolhida._quantidade
+
+            self._bd.delete(mov_escolhida)
+            self._bd.commit()
+            print(f"Movimentação ID {id_mov} deletada com sucesso. Estoque atualizado!")
+
+        except Exception as e:
+            self._bd.rollback()
+            print(f"Erro ao deletar movimentação: {e}")

@@ -5,7 +5,7 @@ from services.movimentar_estoque_services import MovimentarEstoque
 from services.produto_service import ProdutoService 
 from models import Produto, Gerente, Estoque, MovimentacaoEstoque, Estoquista, Vendedor
 from utils.validacoes import Validacoes
-from utils.exceptions import (CpfInvalido, ProdutoNaoExiste, ProdutoJaExiste, CpfJaExistente, EstoquistaNaoExiste, VendedorNaoExiste, GerenteNaoExiste)
+from utils.exceptions import (CpfInvalido, ProdutoNaoExiste, ProdutoJaExiste, CpfJaExistente, EstoquistaNaoExiste, VendedorNaoExiste, GerenteNaoExiste, IdVazio)
 import os
 
 def limpar_tela():
@@ -99,13 +99,23 @@ def menu_gerente_produtos(bd, gerente):
                 print(e)
                 return
             except Exception as e:
-                print('Erro: {e}')
+                print(f'Erro: {e}')
                 return
 
         elif opcao == '2':
-            produto_id = int(input("ID do produto: "))
-            produto_s = ProdutoService(bd)
-            produto_s.atualizar(produto_id)
+            try:
+                produto_id = int(input("ID do produto: ").split())
+                if produto_id == '':
+                    raise IdVazio(produto_id)
+                produto_s = ProdutoService(bd)
+                produto_s.atualizar(produto_id)
+            except IdVazio as e:
+                print(e)
+                return
+            except Exception as e:
+                print(f'Erro: {e}')
+                return
+            
         elif opcao == '3': 
             produto_s = ProdutoService(bd)
             produto_s.listar_tudo()
@@ -135,7 +145,7 @@ def menu_gerente_produtos(bd, gerente):
                 print(e)
                 return
             except Exception as e:
-                print('Erro: {e}')
+                print(f'Erro: {e}')
                 return
         elif opcao == '0':
             return
@@ -275,14 +285,14 @@ def menu_estoquista_produto(bd, gerente):
                 print(e)
                 return
             except Exception as e:
-                print('Erro: {e}')
+                print(f'Erro: {e}')
                 return
 
         elif opcao == '2':
             try:
                 produto_id = int(input("ID do produto: "))
                 produto_s = ProdutoService(bd)
-                produto_s.modificar_produto(produto_id)
+                produto_s.atualizar(produto_id)
             except Exception as e:
                 print(f'Erro: {e}')
                 return
@@ -381,7 +391,7 @@ def menu_vendedor_produto(bd, vendedor):
                 produto_s = ProdutoService(bd)
                 produto_s.atualizar(produto_id)
             except Exception as e:
-                print('Erro {e}')
+                print(f'Erro {e}')
                 return
             
         elif opcao == '2': 
@@ -441,7 +451,7 @@ def menu_vendedor_estoque(bd, vendedor):
                 return
         elif opcao == '3':
             mov_s = MovimentarEstoque(bd)
-            mov_s.listar_movs_estoque()
+            mov_s.listar_tudo()
         elif opcao == '4':
             mov_s = MovimentarEstoque(bd)
             mov_s.listar_mov_estoque()
